@@ -1,4 +1,4 @@
--- TinyAdmin Full v1.0 (مع توقيع)
+-- TinyAdmin Full v1.0 (مع JumpPower، Fly، وشريط سحب للتكبير/التصغير)
 -- صنع بواسطة:abdarhman5641🇪🇬
 -- ملاحظة: ضع هذا LocalScript في StarterPlayer -> StarterPlayerScripts
 
@@ -15,10 +15,15 @@ gui.Parent = player:WaitForChild("PlayerGui")
 -- Helper
 local function safeWait(t) local s = 0; while s < (t or 0.01) do s = s + wait() end end
 
+-- Main frame dimensions
+local MAX_HEIGHT = 500 -- الارتفاع الأقصى 
+local MIN_HEIGHT = 40  -- الارتفاع الأدنى (في حالة التصغير)
+local DEFAULT_HEIGHT = 320 -- الارتفاع الافتراضي
+
 -- Main frame
 local frame = Instance.new("Frame")
 frame.Name = "MainFrame"
-frame.Size = UDim2.new(0, 300, 0, 220)
+frame.Size = UDim2.new(0, 300, 0, DEFAULT_HEIGHT) 
 frame.Position = UDim2.new(0.5, -150, 0.22, 0)
 frame.AnchorPoint = Vector2.new(0.5,0)
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
@@ -55,21 +60,18 @@ subtitle.Position = UDim2.new(0, 10, 0, 18)
 subtitle.Size = UDim2.new(0.45,0,1,0)
 subtitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- توقيع المطور (الصغير تحت أو بجنب الـ subtitle)
+-- توقيع المطور 
 local devLabel = Instance.new("TextLabel", top)
 devLabel.Text = "صنع بواسطة abdarhman5641"
 devLabel.Font = Enum.Font.Arial
 devLabel.TextSize = 10
 devLabel.TextColor3 = Color3.fromRGB(170,170,170)
 devLabel.BackgroundTransparency = 1
--- وضع التوقيع بجانب subtitle بقليل (أو تحتها إن المساحة ضاقت)
-devLabel.Position = UDim2.new(0, 10 + subtitle.TextBounds.X, 0, 18) -- يحاول يكون على يمين subtitle
+devLabel.Position = UDim2.new(0, 10 + subtitle.TextBounds.X, 0, 18) 
 devLabel.Size = UDim2.new(0.45,0,1,0)
 devLabel.TextXAlignment = Enum.TextXAlignment.Left
--- في حال كان القياس غير مناسب على بعض الشاشات، اجعله يظهر تحت subtitle
 spawn(function()
     safeWait(0.03)
-    -- إذا تجاوز العرض: ضع التوقيع تحت subtitle
     if devLabel.AbsolutePosition.X + devLabel.AbsoluteSize.X > top.AbsolutePosition.X + top.AbsoluteSize.X - 8 then
         devLabel.Position = UDim2.new(0, 10, 0, 30)
         devLabel.Size = UDim2.new(1, -20, 0, 12)
@@ -95,54 +97,152 @@ minBtn.Position = UDim2.new(1, -80, 0, 4)
 minBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
 Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0,8)
 
--- content frame
-local content = Instance.new("Frame", frame)
+-- Scrolling frame for content 
+local content = Instance.new("ScrollingFrame", frame)
 content.Name = "Content"
-content.Size = UDim2.new(1, -16, 1, -56)
+content.Size = UDim2.new(1, -16, 1, -84) 
 content.Position = UDim2.new(0,8,0,44)
 content.BackgroundTransparency = 1
+content.Active = true 
+content.ScrollBarThickness = 8 
+content.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60) 
+content.CanvasSize = UDim2.new(0, 0, 0, 200) 
+content.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right 
+
+-- Grid layout inside the scrolling frame
+local grid = Instance.new("UIGridLayout", content)
+grid.Name = "ButtonGrid"
+grid.CellSize = UDim2.new(0, 88, 0, 36)
+grid.CellPadding = UDim2.new(0, 6, 0, 8)
+grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+grid.VerticalAlignment = Enum.VerticalAlignment.Top
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.StartCorner = Enum.StartCorner.TopLeft
+
+-- Function to update CanvasSize automatically
+local function updateCanvasSize()
+    safeWait(0.1)
+    local contentHeight = grid.AbsoluteContentSize.Y
+    content.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
+end
 
 -- left column buttons (grid)
-local function makeButton(parent, txt, pos)
-	local b = Instance.new("TextButton", parent)
+local function makeButton(txt, order)
+	local b = Instance.new("TextButton", content) 
+	b.LayoutOrder = order 
 	b.Text = txt
 	b.Font = Enum.Font.ArialBold
 	b.TextSize = 15
 	b.Size = UDim2.new(0, 88, 0, 36)
-	b.Position = pos
 	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
 	b.TextColor3 = Color3.fromRGB(255,255,255)
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
 	return b
 end
 
--- Buttons (arranged)
-local btnFly = makeButton(content, "Fly", UDim2.new(0, 6, 0, 4))
-local btnNoclip = makeButton(content, "Noclip", UDim2.new(0, 102, 0, 4))
-local btnSpeed = makeButton(content, "Set Speed", UDim2.new(0, 198, 0, 4))
+-- Buttons 
+local order = 1
+local btnFly = makeButton("Fly", order); order = order + 1 -- ✔️ الطيران
+local btnNoclip = makeButton("Noclip", order); order = order + 1
+local btnSpeed = makeButton("Set Speed", order); order = order + 1
 
-local btnJump = makeButton(content, "JumpPower", UDim2.new(0, 6, 0, 48))
-local btnTeleport = makeButton(content, "Teleport →", UDim2.new(0, 102, 0, 48))
-local btnGiveWood = makeButton(content, "GiveWood", UDim2.new(0, 198, 0, 48))
+local btnJump = makeButton("JumpPower", order); order = order + 1 -- ✔️ قوة القفز
+local btnTeleport = makeButton("Teleport →", order); order = order + 1
+local btnGiveWood = makeButton("GiveWood", order); order = order + 1
 
-local btnInvisible = makeButton(content, "Invisible", UDim2.new(0,6,0,92))
-local btnReset = makeButton(content, "Reset", UDim2.new(0,102,0,92))
-local btnFreecam = makeButton(content, "FreeCam", UDim2.new(0,198,0,92))
+local btnInvisible = makeButton("Invisible", order); order = order + 1
+local btnReset = makeButton("Reset", order); order = order + 1
+local btnFreecam = makeButton("FreeCam", order); order = order + 1
 
-local btnGiveFood = makeButton(content, "GiveFood", UDim2.new(0,6,0,136))
-local btnBoom = makeButton(content, "Boom", UDim2.new(0,102,0,136))
-local btnHeal = makeButton(content, "Heal", UDim2.new(0,198,0,136))
+local btnGiveFood = makeButton("GiveFood", order); order = order + 1
+local btnBoom = makeButton("Boom", order); order = order + 1
+local btnHeal = makeButton("Heal", order); order = order + 1
+
+local btnTest1 = makeButton("Test 1", order); order = order + 1
+local btnTest2 = makeButton("Test 2", order); order = order + 1
+local btnTest3 = makeButton("Test 3", order); order = order + 1
+
+updateCanvasSize()
+grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize) 
 
 -- Input boxes and labels
 local inputBox = Instance.new("TextBox", frame)
 inputBox.Size = UDim2.new(1, -16, 0, 28)
-inputBox.Position = UDim2.new(0, 8, 1, -36)
+inputBox.Position = UDim2.new(0, 8, 1, -40) 
 inputBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
 inputBox.PlaceholderText = "اكتب قيم (مثال: 60 أو اسم لاعب) ثم اضغط الزر المناسب"
 inputBox.TextColor3 = Color3.new(1,1,1)
 inputBox.Font = Enum.Font.Arial
 inputBox.TextSize = 14
 Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0,8)
+
+--------------------------------------------------------------------------------
+-- مقبض سحب لتغيير الحجم (Resize Handle)
+--------------------------------------------------------------------------------
+local resizeHandle = Instance.new("Frame", frame)
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Size = UDim2.new(1, 0, 0, 12) 
+resizeHandle.Position = UDim2.new(0, 0, 1, -12)
+resizeHandle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+resizeHandle.Active = true
+resizeHandle.ZIndex = 2 
+
+-- مؤشر بصري للمقبض (تم تعديله ليكون أوضح)
+local handleIcon = Instance.new("TextLabel", resizeHandle)
+handleIcon.Text = "⬆️ لفوق للتصغير | لتحت للتكبير ⬇️" -- النص المطلوب
+handleIcon.BackgroundTransparency = 1
+handleIcon.TextColor3 = Color3.fromRGB(150, 150, 150)
+handleIcon.Font = Enum.Font.Arial
+handleIcon.TextSize = 10
+handleIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+handleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+handleIcon.Size = UDim2.new(1,0,1,0)
+
+-- منطق تغيير حجم الإطار بالسحب
+local isResizing = false
+local resizeStartPos
+
+local function resizeInputBegan(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isResizing = true
+        resizeStartPos = input.Position
+        
+        -- إيقاف منطق السحب العادي مؤقتًا
+        dragging = false
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                isResizing = false
+            end
+        end)
+    end
+end
+
+local function resizeInputChanged(input)
+    if isResizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local deltaY = input.Position.Y - resizeStartPos.Y
+        local currentHeight = frame.AbsoluteSize.Y
+        
+        -- السحب للأعلى (Y تقل) يصغر (NewHeight تقل)
+        -- السحب للأسفل (Y تزيد) يكبر (NewHeight تزيد)
+        local newHeight = currentHeight + deltaY 
+        
+        -- التقييد بين الحد الأدنى والأقصى
+        newHeight = math.clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT)
+        
+        -- تطبيق الارتفاع الجديد باستخدام TweenService للنعومة
+        local tweenInfo = TweenInfo.new(0.05, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
+        local goal = {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, newHeight)}
+        TweenService:Create(frame, tweenInfo, goal):Play()
+
+        -- تحديث نقطة البداية للسحب الجديد
+        resizeStartPos = input.Position
+    end
+end
+
+resizeHandle.InputBegan:Connect(resizeInputBegan)
+UserInputService.InputChanged:Connect(resizeInputChanged)
+--------------------------------------------------------------------------------
 
 -- mini icon when locked
 local miniIcon = Instance.new("TextButton")
@@ -166,14 +266,16 @@ local dragStartPos, frameStartPos
 
 local function onInputBegan(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStartPos = input.Position
-		frameStartPos = frame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
+        if not isResizing then
+            dragging = true
+            dragStartPos = input.Position
+            frameStartPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
 	end
 end
 
@@ -205,17 +307,18 @@ end)
 
 minBtn.MouseButton1Click:Connect(function()
 	isMin = not isMin
-	if isMin then
-		content.Visible = false
-		inputBox.Visible = false
-		frame.Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 40)
-		minBtn.Text = "➕"
-	else
-		content.Visible = true
-		inputBox.Visible = true
-		frame.Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 220)
-		minBtn.Text = "➖"
-	end
+    local targetHeight = isMin and MIN_HEIGHT or DEFAULT_HEIGHT
+    
+    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0)
+    local goal = {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, targetHeight)}
+    
+    TweenService:Create(frame, tweenInfo, goal):Play()
+    
+	content.Visible = not isMin
+	inputBox.Visible = not isMin
+    resizeHandle.Visible = not isMin 
+
+	minBtn.Text = isMin and "➕" or "➖"
 end)
 
 -- get character helper
@@ -233,15 +336,12 @@ local function getRoot()
 	return ch:FindFirstChild("HumanoidRootPart") or ch:FindFirstChild("Torso") or ch:FindFirstChild("LowerTorso")
 end
 
--- Command implementations
-
--- 1) Speed (set numeric in inputBox then press Set Speed)
+-- 1) Speed 
 btnSpeed.MouseButton1Click:Connect(function()
 	local num = tonumber(inputBox.Text)
 	local hum = getHumanoid()
 	if num and hum then
 		pcall(function() hum.WalkSpeed = num end)
-		-- feedback
 		inputBox.Text = ""
 		game.StarterGui:SetCore("SendNotification", {Title="Speed", Text="Set to "..tostring(num)})
 	else
@@ -249,7 +349,7 @@ btnSpeed.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 2) JumpPower
+-- 2) JumpPower (ميزة مطلوبة وموجودة)
 btnJump.MouseButton1Click:Connect(function()
 	local num = tonumber(inputBox.Text)
 	local hum = getHumanoid()
@@ -262,7 +362,7 @@ btnJump.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 3) Teleport to player by name (type exact name or partial)
+-- 3) Teleport 
 btnTeleport.MouseButton1Click:Connect(function()
 	local targetName = inputBox.Text:lower()
 	if targetName == "" then
@@ -309,7 +409,6 @@ btnNoclip.MouseButton1Click:Connect(function()
 		game.StarterGui:SetCore("SendNotification", {Title="Noclip", Text="مفعل (محلي)"})
 	else
 		if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
-		-- try to restore
 		local ch = player.Character
 		if ch then
 			for _, part in pairs(ch:GetDescendants()) do
@@ -323,7 +422,7 @@ btnNoclip.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 5) Fly (local) toggle
+-- 5) Fly (local) toggle (ميزة مطلوبة وموجودة)
 local flying = false
 local flyBV, flyBG
 local flySpeed = 60
@@ -379,7 +478,7 @@ btnFly.MouseButton1Click:Connect(function()
 	if flying then stopFly() else startFly() end
 end)
 
--- 6) GiveWood & GiveFood (local visual items attached to player inventory area)
+-- 6) GiveWood & GiveFood 
 local function spawnLocalItem(name)
 	local root = getRoot()
 	if not root then return end
@@ -398,7 +497,6 @@ local function spawnLocalItem(name)
 		weld.Part0 = part
 		weld.Part1 = root
 	end
-	-- auto cleanup after 20s
 	game.Debris:AddItem(part, 20)
 end
 
@@ -412,7 +510,7 @@ btnGiveFood.MouseButton1Click:Connect(function()
 	game.StarterGui:SetCore("SendNotification", {Title="GiveFood", Text="طعام محلي تم إنشاؤه"})
 end)
 
--- 7) Invisible (local): transparency + disable name display locally
+-- 7) Invisible 
 local invisibleOn = false
 btnInvisible.MouseButton1Click:Connect(function()
 	invisibleOn = not invisibleOn
@@ -441,7 +539,7 @@ btnInvisible.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 8) Reset (respawn)
+-- 8) Reset 
 btnReset.MouseButton1Click:Connect(function()
 	local hum = getHumanoid()
 	if hum then
@@ -450,7 +548,7 @@ btnReset.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 9) FreeCam (toggle) - local camera detach
+-- 9) FreeCam 
 local freecam = false
 local savedCameraType, savedCameraSubject, savedCameraCFrame
 local fcConn
@@ -464,7 +562,6 @@ btnFreecam.MouseButton1Click:Connect(function()
 		savedCameraCFrame = cam.CFrame
 		cam.CameraType = Enum.CameraType.Scriptable
 		fcConn = RunService.RenderStepped:Connect(function(dt)
-			-- simple WASD + mouse look for freecam
 			local move = Vector3.new()
 			if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
 			if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
@@ -473,7 +570,6 @@ btnFreecam.MouseButton1Click:Connect(function()
 			if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0,1,0) end
 			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0,1,0) end
 			cam.CFrame = cam.CFrame + move * (50 * dt)
-			-- mouse look
 			local delta = UserInputService:GetMouseDelta()
 			if delta.Magnitude > 0 then
 				local ang = CFrame.Angles(0, -delta.X * 0.0025, 0) * CFrame.Angles(-delta.Y * 0.0025, 0, 0)
@@ -499,19 +595,17 @@ btnFreecam.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 10) Boom (visual only, no damage)
+-- 10) Boom 
 btnBoom.MouseButton1Click:Connect(function()
 	local root = getRoot()
 	if not root then return end
 	local pos = root.Position
-	-- create explosion visual but zero pressure/damage
 	local ex = Instance.new("Explosion")
 	ex.Position = pos
 	ex.BlastPressure = 0
 	ex.BlastRadius = 8
 	ex.Visible = true
 	ex.Parent = workspace
-	-- optional particle effect
 	local p = Instance.new("Part")
 	p.Transparency = 1
 	p.Anchored = true
@@ -539,11 +633,6 @@ end)
 -- Clean up / ensure humanoid reference on respawn
 player.CharacterAdded:Connect(function()
 	safeWait(0.2)
-	-- restore noclip state if was on (reapply)
-	if noclipOn then
-		-- will be applied by the Stepped connection automatically
-	end
-	-- ensure transparency reset if not invisibleOn
 	if not invisibleOn then
 		local ch = player.Character
 		if ch then
@@ -561,7 +650,6 @@ inputBox.FocusLost:Connect(function(enter)
 	if not enter then return end
 	local s = inputBox.Text
 	if s == "" then return end
-	-- if numeric -> set speed
 	local n = tonumber(s)
 	if n then
 		local hum = getHumanoid()
@@ -570,20 +658,15 @@ inputBox.FocusLost:Connect(function(enter)
 		inputBox.Text = ""
 		return
 	end
-	-- if starts with "tp " -> teleport
 	if s:lower():sub(1,3) == "tp " then
 		local name = s:sub(4)
 		inputBox.Text = name
-		-- trigger teleport button behavior
 		btnTeleport:MouseButton1Click()
 		inputBox.Text = ""
 		return
 	end
-	-- otherwise try teleport by name
-	-- (as convenience)
 	for _, pl in pairs(Players:GetPlayers()) do
 		if pl.Name:lower():find(s:lower()) or (pl.DisplayName and pl.DisplayName:lower():find(s:lower())) then
-			-- teleport
 			local target = pl
 			if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
 				local root = getRoot()
@@ -594,7 +677,6 @@ inputBox.FocusLost:Connect(function(enter)
 			end
 		end
 	end
-	-- fallback
 	game.StarterGui:SetCore("SendNotification", {Title="Input", Text="لم يتم التعرف على الأمر في الحقل"})
 end)
 
