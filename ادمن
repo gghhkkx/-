@@ -1,0 +1,603 @@
+-- TinyAdmin Full v1.0 (مع توقيع)
+-- صنع بواسطة:abdarhman5641🇪🇬
+-- ملاحظة: ضع هذا LocalScript في StarterPlayer -> StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "TinyAdminFull"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Helper
+local function safeWait(t) local s = 0; while s < (t or 0.01) do s = s + wait() end end
+
+-- Main frame
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 300, 0, 220)
+frame.Position = UDim2.new(0.5, -150, 0.22, 0)
+frame.AnchorPoint = Vector2.new(0.5,0)
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+
+-- Top bar
+local top = Instance.new("Frame", frame)
+top.Name = "Top"
+top.Size = UDim2.new(1, 0, 0, 36)
+top.Position = UDim2.new(0,0,0,0)
+top.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", top).CornerRadius = UDim.new(0,10)
+
+local title = Instance.new("TextLabel", top)
+title.Text = "ادمن"
+title.Font = Enum.Font.ArialBold
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.BackgroundTransparency = 1
+title.Position = UDim2.new(0, 10, 0, 2)
+title.Size = UDim2.new(0.6,0,1,0)
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+local subtitle = Instance.new("TextLabel", top)
+subtitle.Text = "مصري%100✅🇪🇬"
+subtitle.Font = Enum.Font.Arial
+subtitle.TextSize = 12
+subtitle.TextColor3 = Color3.fromRGB(200,200,200)
+subtitle.BackgroundTransparency = 1
+subtitle.Position = UDim2.new(0, 10, 0, 18)
+subtitle.Size = UDim2.new(0.45,0,1,0)
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+
+-- توقيع المطور (الصغير تحت أو بجنب الـ subtitle)
+local devLabel = Instance.new("TextLabel", top)
+devLabel.Text = "صنع بواسطة abdarhman5641"
+devLabel.Font = Enum.Font.Arial
+devLabel.TextSize = 10
+devLabel.TextColor3 = Color3.fromRGB(170,170,170)
+devLabel.BackgroundTransparency = 1
+-- وضع التوقيع بجانب subtitle بقليل (أو تحتها إن المساحة ضاقت)
+devLabel.Position = UDim2.new(0, 10 + subtitle.TextBounds.X, 0, 18) -- يحاول يكون على يمين subtitle
+devLabel.Size = UDim2.new(0.45,0,1,0)
+devLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- في حال كان القياس غير مناسب على بعض الشاشات، اجعله يظهر تحت subtitle
+spawn(function()
+    safeWait(0.03)
+    -- إذا تجاوز العرض: ضع التوقيع تحت subtitle
+    if devLabel.AbsolutePosition.X + devLabel.AbsoluteSize.X > top.AbsolutePosition.X + top.AbsoluteSize.X - 8 then
+        devLabel.Position = UDim2.new(0, 10, 0, 30)
+        devLabel.Size = UDim2.new(1, -20, 0, 12)
+        devLabel.TextXAlignment = Enum.TextXAlignment.Left
+    end
+end)
+
+local lockBtn = Instance.new("TextButton", top)
+lockBtn.Text = "🔒"
+lockBtn.Font = Enum.Font.ArialBold
+lockBtn.TextSize = 20
+lockBtn.Size = UDim2.new(0,36,0,28)
+lockBtn.Position = UDim2.new(1, -40, 0, 4)
+lockBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+Instance.new("UICorner", lockBtn).CornerRadius = UDim.new(0,8)
+
+local minBtn = Instance.new("TextButton", top)
+minBtn.Text = "➖"
+minBtn.Font = Enum.Font.ArialBold
+minBtn.TextSize = 20
+minBtn.Size = UDim2.new(0,36,0,28)
+minBtn.Position = UDim2.new(1, -80, 0, 4)
+minBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0,8)
+
+-- content frame
+local content = Instance.new("Frame", frame)
+content.Name = "Content"
+content.Size = UDim2.new(1, -16, 1, -56)
+content.Position = UDim2.new(0,8,0,44)
+content.BackgroundTransparency = 1
+
+-- left column buttons (grid)
+local function makeButton(parent, txt, pos)
+	local b = Instance.new("TextButton", parent)
+	b.Text = txt
+	b.Font = Enum.Font.ArialBold
+	b.TextSize = 15
+	b.Size = UDim2.new(0, 88, 0, 36)
+	b.Position = pos
+	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.TextColor3 = Color3.fromRGB(255,255,255)
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+	return b
+end
+
+-- Buttons (arranged)
+local btnFly = makeButton(content, "Fly", UDim2.new(0, 6, 0, 4))
+local btnNoclip = makeButton(content, "Noclip", UDim2.new(0, 102, 0, 4))
+local btnSpeed = makeButton(content, "Set Speed", UDim2.new(0, 198, 0, 4))
+
+local btnJump = makeButton(content, "JumpPower", UDim2.new(0, 6, 0, 48))
+local btnTeleport = makeButton(content, "Teleport →", UDim2.new(0, 102, 0, 48))
+local btnGiveWood = makeButton(content, "GiveWood", UDim2.new(0, 198, 0, 48))
+
+local btnInvisible = makeButton(content, "Invisible", UDim2.new(0,6,0,92))
+local btnReset = makeButton(content, "Reset", UDim2.new(0,102,0,92))
+local btnFreecam = makeButton(content, "FreeCam", UDim2.new(0,198,0,92))
+
+local btnGiveFood = makeButton(content, "GiveFood", UDim2.new(0,6,0,136))
+local btnBoom = makeButton(content, "Boom", UDim2.new(0,102,0,136))
+local btnHeal = makeButton(content, "Heal", UDim2.new(0,198,0,136))
+
+-- Input boxes and labels
+local inputBox = Instance.new("TextBox", frame)
+inputBox.Size = UDim2.new(1, -16, 0, 28)
+inputBox.Position = UDim2.new(0, 8, 1, -36)
+inputBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
+inputBox.PlaceholderText = "اكتب قيم (مثال: 60 أو اسم لاعب) ثم اضغط الزر المناسب"
+inputBox.TextColor3 = Color3.new(1,1,1)
+inputBox.Font = Enum.Font.Arial
+inputBox.TextSize = 14
+Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0,8)
+
+-- mini icon when locked
+local miniIcon = Instance.new("TextButton")
+miniIcon.Parent = gui
+miniIcon.Size = UDim2.new(0, 100, 0, 40)
+miniIcon.Position = UDim2.new(0.5, -50, 0.85, 0)
+miniIcon.AnchorPoint = Vector2.new(0.5,0)
+miniIcon.Text = "ادمن"
+miniIcon.Font = Enum.Font.ArialBold
+miniIcon.TextSize = 18
+miniIcon.BackgroundColor3 = Color3.fromRGB(30,30,30)
+miniIcon.TextColor3 = Color3.new(1,1,1)
+miniIcon.Visible = false
+Instance.new("UICorner", miniIcon).CornerRadius = UDim.new(0,10)
+miniIcon.Active = true
+miniIcon.Draggable = true
+
+-- Drag logic for frame (touch+mouse)
+local dragging = false
+local dragStartPos, frameStartPos
+
+local function onInputBegan(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStartPos = input.Position
+		frameStartPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end
+
+local function onInputChanged(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStartPos
+		frame.Position = UDim2.new(frameStartPos.X.Scale, frameStartPos.X.Offset + delta.X, frameStartPos.Y.Scale, frameStartPos.Y.Offset + delta.Y)
+	end
+end
+
+top.InputBegan:Connect(onInputBegan)
+UserInputService.InputChanged:Connect(onInputChanged)
+
+-- lock / minimize behavior
+local isLocked = false
+local isMin = false
+
+lockBtn.MouseButton1Click:Connect(function()
+	isLocked = not isLocked
+	frame.Visible = not isLocked
+	miniIcon.Visible = isLocked
+end)
+
+miniIcon.MouseButton1Click:Connect(function()
+	isLocked = false
+	frame.Visible = true
+	miniIcon.Visible = false
+end)
+
+minBtn.MouseButton1Click:Connect(function()
+	isMin = not isMin
+	if isMin then
+		content.Visible = false
+		inputBox.Visible = false
+		frame.Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 40)
+		minBtn.Text = "➕"
+	else
+		content.Visible = true
+		inputBox.Visible = true
+		frame.Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 220)
+		minBtn.Text = "➖"
+	end
+end)
+
+-- get character helper
+local function getChar()
+	return player.Character or player.CharacterAdded:Wait()
+end
+
+local function getHumanoid()
+	local ch = getChar()
+	return ch:FindFirstChildOfClass("Humanoid")
+end
+
+local function getRoot()
+	local ch = getChar()
+	return ch:FindFirstChild("HumanoidRootPart") or ch:FindFirstChild("Torso") or ch:FindFirstChild("LowerTorso")
+end
+
+-- Command implementations
+
+-- 1) Speed (set numeric in inputBox then press Set Speed)
+btnSpeed.MouseButton1Click:Connect(function()
+	local num = tonumber(inputBox.Text)
+	local hum = getHumanoid()
+	if num and hum then
+		pcall(function() hum.WalkSpeed = num end)
+		-- feedback
+		inputBox.Text = ""
+		game.StarterGui:SetCore("SendNotification", {Title="Speed", Text="Set to "..tostring(num)})
+	else
+		game.StarterGui:SetCore("SendNotification", {Title="Speed", Text="اكتب رقم صالح في المربع"})
+	end
+end)
+
+-- 2) JumpPower
+btnJump.MouseButton1Click:Connect(function()
+	local num = tonumber(inputBox.Text)
+	local hum = getHumanoid()
+	if num and hum then
+		pcall(function() hum.JumpPower = num end)
+		inputBox.Text = ""
+		game.StarterGui:SetCore("SendNotification", {Title="JumpPower", Text="Set to "..tostring(num)})
+	else
+		game.StarterGui:SetCore("SendNotification", {Title="JumpPower", Text="اكتب رقم صالح"})
+	end
+end)
+
+-- 3) Teleport to player by name (type exact name or partial)
+btnTeleport.MouseButton1Click:Connect(function()
+	local targetName = inputBox.Text:lower()
+	if targetName == "" then
+		game.StarterGui:SetCore("SendNotification", {Title="Teleport", Text="اكتب اسم لاعب في المربع"})
+		return
+	end
+	local found
+	for _, pl in pairs(Players:GetPlayers()) do
+		if pl.Name:lower():find(targetName) or (pl.DisplayName and pl.DisplayName:lower():find(targetName)) then
+			found = pl
+			break
+		end
+	end
+	if found and found.Character and found.Character:FindFirstChild("HumanoidRootPart") then
+		local root = getRoot()
+		if root then
+			pcall(function()
+				root.CFrame = found.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+			end)
+			game.StarterGui:SetCore("SendNotification", {Title="Teleport", Text="تم الانتقال إلى "..found.Name})
+		end
+	else
+		game.StarterGui:SetCore("SendNotification", {Title="Teleport", Text="اللاعب غير موجود أو غير متاح"})
+	end
+end)
+
+-- 4) Noclip (local) toggle
+local noclipOn = false
+local noclipConn
+btnNoclip.MouseButton1Click:Connect(function()
+	noclipOn = not noclipOn
+	if noclipOn then
+		noclipConn = RunService.Stepped:Connect(function()
+			local ch = player.Character
+			if ch then
+				for _, part in pairs(ch:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end
+		end)
+		btnNoclip.Text = "Noclip✓"
+		game.StarterGui:SetCore("SendNotification", {Title="Noclip", Text="مفعل (محلي)"})
+	else
+		if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+		-- try to restore
+		local ch = player.Character
+		if ch then
+			for _, part in pairs(ch:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = true
+				end
+			end
+		end
+		btnNoclip.Text = "Noclip"
+		game.StarterGui:SetCore("SendNotification", {Title="Noclip", Text="تم الإيقاف"})
+	end
+end)
+
+-- 5) Fly (local) toggle
+local flying = false
+local flyBV, flyBG
+local flySpeed = 60
+
+local flyConn
+local function startFly()
+	if flying then return end
+	local char = getChar()
+	local hum = getHumanoid()
+	local root = getRoot()
+	if not (char and hum and root) then return end
+	flying = true
+	hum.PlatformStand = true
+	flyBV = Instance.new("BodyVelocity", root)
+	flyBG = Instance.new("BodyGyro", root)
+	flyBV.MaxForce = Vector3.new(9e5,9e5,9e5)
+	flyBG.MaxTorque = Vector3.new(9e5,9e5,9e5)
+	flyBG.P = 10000
+	flyConn = RunService.RenderStepped:Connect(function()
+		if not flying then return end
+		local cam = workspace.CurrentCamera
+		local move = Vector3.new()
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0,1,0) end
+		if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then move = move - Vector3.new(0,1,0) end
+		if move.Magnitude > 0 then
+			flyBV.Velocity = move.Unit * flySpeed
+		else
+			flyBV.Velocity = Vector3.new(0,0,0)
+		end
+		flyBG.CFrame = workspace.CurrentCamera.CFrame
+	end)
+	btnFly.Text = "Stop Fly"
+	game.StarterGui:SetCore("SendNotification", {Title="Fly", Text="طيران مفعل (اضغط Fly لإيقاف)"})
+end
+
+local function stopFly()
+	if not flying then return end
+	flying = false
+	local hum = getHumanoid()
+	if hum then pcall(function() hum.PlatformStand = false end) end
+	if flyConn then flyConn:Disconnect(); flyConn = nil end
+	if flyBV then flyBV:Destroy(); flyBV = nil end
+	if flyBG then flyBG:Destroy(); flyBG = nil end
+	btnFly.Text = "Fly"
+	game.StarterGui:SetCore("SendNotification", {Title="Fly", Text="تم إيقاف الطيران"})
+end
+
+btnFly.MouseButton1Click:Connect(function()
+	if flying then stopFly() else startFly() end
+end)
+
+-- 6) GiveWood & GiveFood (local visual items attached to player inventory area)
+local function spawnLocalItem(name)
+	local root = getRoot()
+	if not root then return end
+	local part = Instance.new("Part")
+	part.Size = Vector3.new(1,1,1)
+	part.Shape = Enum.PartType.Block
+	part.Anchored = false
+	part.CanCollide = false
+	part.Material = Enum.Material.Wood
+	part.Name = name
+	part.CFrame = root.CFrame * CFrame.new(0,2,0)
+	part.Parent = workspace
+	local weld = Instance.new("WeldConstraint", part)
+	local handle = root
+	if root then
+		weld.Part0 = part
+		weld.Part1 = root
+	end
+	-- auto cleanup after 20s
+	game.Debris:AddItem(part, 20)
+end
+
+btnGiveWood.MouseButton1Click:Connect(function()
+	spawnLocalItem("Wood")
+	game.StarterGui:SetCore("SendNotification", {Title="GiveWood", Text="خشب محلي تم إنشاؤه"})
+end)
+
+btnGiveFood.MouseButton1Click:Connect(function()
+	spawnLocalItem("Food")
+	game.StarterGui:SetCore("SendNotification", {Title="GiveFood", Text="طعام محلي تم إنشاؤه"})
+end)
+
+-- 7) Invisible (local): transparency + disable name display locally
+local invisibleOn = false
+btnInvisible.MouseButton1Click:Connect(function()
+	invisibleOn = not invisibleOn
+	local ch = player.Character
+	if not ch then return end
+	if invisibleOn then
+		for _, v in pairs(ch:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.LocalTransparencyModifier = 1
+			elseif v:IsA("Decal") or v:IsA("Texture") then
+				v.Transparency = 1
+			end
+		end
+		btnInvisible.Text = "Invisible✓"
+		game.StarterGui:SetCore("SendNotification", {Title="Invisible", Text="اخفيت شخصيتك محلياً"})
+	else
+		for _, v in pairs(ch:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.LocalTransparencyModifier = 0
+			elseif v:IsA("Decal") or v:IsA("Texture") then
+				v.Transparency = 0
+			end
+		end
+		btnInvisible.Text = "Invisible"
+		game.StarterGui:SetCore("SendNotification", {Title="Invisible", Text="أعدت الظهور محلياً"})
+	end
+end)
+
+-- 8) Reset (respawn)
+btnReset.MouseButton1Click:Connect(function()
+	local hum = getHumanoid()
+	if hum then
+		pcall(function() hum.Health = 0 end)
+		game.StarterGui:SetCore("SendNotification", {Title="Reset", Text="تم إعادة الضبط"})
+	end
+end)
+
+-- 9) FreeCam (toggle) - local camera detach
+local freecam = false
+local savedCameraType, savedCameraSubject, savedCameraCFrame
+local fcConn
+
+btnFreecam.MouseButton1Click:Connect(function()
+	freecam = not freecam
+	if freecam then
+		local cam = workspace.CurrentCamera
+		savedCameraType = cam.CameraType
+		savedCameraSubject = cam.CameraSubject
+		savedCameraCFrame = cam.CFrame
+		cam.CameraType = Enum.CameraType.Scriptable
+		fcConn = RunService.RenderStepped:Connect(function(dt)
+			-- simple WASD + mouse look for freecam
+			local move = Vector3.new()
+			if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.A) then move = move - cam.CFrame.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.D) then move = move + cam.CFrame.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move = move + Vector3.new(0,1,0) end
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - Vector3.new(0,1,0) end
+			cam.CFrame = cam.CFrame + move * (50 * dt)
+			-- mouse look
+			local delta = UserInputService:GetMouseDelta()
+			if delta.Magnitude > 0 then
+				local ang = CFrame.Angles(0, -delta.X * 0.0025, 0) * CFrame.Angles(-delta.Y * 0.0025, 0, 0)
+				cam.CFrame = cam.CFrame * ang
+			end
+		end)
+		btnFreecam.Text = "FreeCam✓"
+		game.StarterGui:SetCore("SendNotification", {Title="FreeCam", Text="Camera detached"})
+	else
+		local cam = workspace.CurrentCamera
+		if fcConn then fcConn:Disconnect(); fcConn = nil end
+		if savedCameraType then
+			cam.CameraType = savedCameraType
+		end
+		if savedCameraSubject then
+			cam.CameraSubject = savedCameraSubject
+		end
+		if savedCameraCFrame then
+			pcall(function() cam.CFrame = savedCameraCFrame end)
+		end
+		btnFreecam.Text = "FreeCam"
+		game.StarterGui:SetCore("SendNotification", {Title="FreeCam", Text="Camera restored"})
+	end
+end)
+
+-- 10) Boom (visual only, no damage)
+btnBoom.MouseButton1Click:Connect(function()
+	local root = getRoot()
+	if not root then return end
+	local pos = root.Position
+	-- create explosion visual but zero pressure/damage
+	local ex = Instance.new("Explosion")
+	ex.Position = pos
+	ex.BlastPressure = 0
+	ex.BlastRadius = 8
+	ex.Visible = true
+	ex.Parent = workspace
+	-- optional particle effect
+	local p = Instance.new("Part")
+	p.Transparency = 1
+	p.Anchored = true
+	p.CanCollide = false
+	p.CFrame = CFrame.new(pos)
+	p.Parent = workspace
+	local ps = Instance.new("ParticleEmitter", p)
+	ps.Rate = 2000
+	ps.Lifetime = NumberRange.new(0.4)
+	ps.Speed = NumberRange.new(40)
+	ps.VelocitySpread = 180
+	game.Debris:AddItem(p, 1.2)
+	game.StarterGui:SetCore("SendNotification", {Title="Boom", Text="انفجار بصري (محلي)"})
+end)
+
+-- 11) Heal
+btnHeal.MouseButton1Click:Connect(function()
+	local hum = getHumanoid()
+	if hum then
+		pcall(function() hum.Health = hum.MaxHealth end)
+		game.StarterGui:SetCore("SendNotification", {Title="Heal", Text="تم الشفاء"})
+	end
+end)
+
+-- Clean up / ensure humanoid reference on respawn
+player.CharacterAdded:Connect(function()
+	safeWait(0.2)
+	-- restore noclip state if was on (reapply)
+	if noclipOn then
+		-- will be applied by the Stepped connection automatically
+	end
+	-- ensure transparency reset if not invisibleOn
+	if not invisibleOn then
+		local ch = player.Character
+		if ch then
+			for _, v in pairs(ch:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.LocalTransparencyModifier = 0
+				end
+			end
+		end
+	end
+end)
+
+-- Small UX: press Enter on input to trigger best-guess action
+inputBox.FocusLost:Connect(function(enter)
+	if not enter then return end
+	local s = inputBox.Text
+	if s == "" then return end
+	-- if numeric -> set speed
+	local n = tonumber(s)
+	if n then
+		local hum = getHumanoid()
+		if hum then pcall(function() hum.WalkSpeed = n end) end
+		game.StarterGui:SetCore("SendNotification", {Title="Speed", Text="Set to "..tostring(n)})
+		inputBox.Text = ""
+		return
+	end
+	-- if starts with "tp " -> teleport
+	if s:lower():sub(1,3) == "tp " then
+		local name = s:sub(4)
+		inputBox.Text = name
+		-- trigger teleport button behavior
+		btnTeleport:MouseButton1Click()
+		inputBox.Text = ""
+		return
+	end
+	-- otherwise try teleport by name
+	-- (as convenience)
+	for _, pl in pairs(Players:GetPlayers()) do
+		if pl.Name:lower():find(s:lower()) or (pl.DisplayName and pl.DisplayName:lower():find(s:lower())) then
+			-- teleport
+			local target = pl
+			if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+				local root = getRoot()
+				if root then pcall(function() root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0) end) end
+				game.StarterGui:SetCore("SendNotification", {Title="Teleport", Text="To "..target.Name})
+				inputBox.Text = ""
+				return
+			end
+		end
+	end
+	-- fallback
+	game.StarterGui:SetCore("SendNotification", {Title="Input", Text="لم يتم التعرف على الأمر في الحقل"})
+end)
+
+-- Final note for user
+print("TinyAdminFull loaded - العبد 🇪🇬")
+game.StarterGui:SetCore("SendNotification", {Title="TinyAdmin", Text="تم تحميل السكربت — صنع بواسطة abdarhman5641"})
