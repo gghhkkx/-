@@ -80,7 +80,7 @@ spawn(function()
 end)
 
 local lockBtn = Instance.new("TextButton", top)
-lockBtn.Text = "🔒"
+lockBtn.Text = "❌"
 lockBtn.Font = Enum.Font.ArialBold
 lockBtn.TextSize = 20
 lockBtn.Size = UDim2.new(0,36,0,28)
