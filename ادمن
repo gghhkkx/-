@@ -1,4 +1,4 @@
--- TinyAdmin Full v1.0 (مع JumpPower، Fly، وشريط سحب للتكبير/التصغير)
+here-- TinyAdmin Full v1.0 (مع JumpPower، Fly، وشريط سحب للتكبير/التصغير)
 -- صنع بواسطة:abdarhman5641🇪🇬
 -- ملاحظة: ضع هذا LocalScript في StarterPlayer -> StarterPlayerScripts
 
@@ -140,13 +140,13 @@ local function makeButton(txt, order)
 	return b
 end
 
--- Buttons 
+-- Buttons (تم تعديل الترتيب وحذف Test 1-3 وإضافة السكريبت الجديد)
 local order = 1
-local btnFly = makeButton("Fly", order); order = order + 1 -- ✔️ الطيران
+local btnFly = makeButton("Fly", order); order = order + 1
 local btnNoclip = makeButton("Noclip", order); order = order + 1
 local btnSpeed = makeButton("Set Speed", order); order = order + 1
 
-local btnJump = makeButton("JumpPower", order); order = order + 1 -- ✔️ قوة القفز
+local btnJump = makeButton("JumpPower", order); order = order + 1
 local btnTeleport = makeButton("Teleport →", order); order = order + 1
 local btnGiveWood = makeButton("GiveWood", order); order = order + 1
 
@@ -158,9 +158,13 @@ local btnGiveFood = makeButton("GiveFood", order); order = order + 1
 local btnBoom = makeButton("Boom", order); order = order + 1
 local btnHeal = makeButton("Heal", order); order = order + 1
 
-local btnTest1 = makeButton("Test 1", order); order = order + 1
-local btnTest2 = makeButton("Test 2", order); order = order + 1
-local btnTest3 = makeButton("Test 3", order); order = order + 1
+-- **الخيار الجديد المطلوب**
+local btnScript99 = makeButton("سكريبت 99 ليله", order); order = order + 1
+
+-- **تم حذف Test 1, Test 2, Test 3 من الكود الأصلي هنا**
+-- local btnTest1 = makeButton("Test 1", order); order = order + 1
+-- local btnTest2 = makeButton("Test 2", order); order = order + 1
+-- local btnTest3 = makeButton("Test 3", order); order = order + 1
 
 updateCanvasSize()
 grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize) 
@@ -628,6 +632,13 @@ btnHeal.MouseButton1Click:Connect(function()
 		pcall(function() hum.Health = hum.MaxHealth end)
 		game.StarterGui:SetCore("SendNotification", {Title="Heal", Text="تم الشفاء"})
 	end
+end)
+
+-- **12) سكريبت 99 ليله (الخيار الجديد)**
+btnScript99.MouseButton1Click:Connect(function()
+    -- الكود المطلوب تشغيله عند الضغط على الزر
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/caomod2077/Script/refs/heads/main/FoxnameHub.lua"))()
+    game.StarterGui:SetCore("SendNotification", {Title="سكريبت 99 ليله", Text="تم محاولة تشغيل السكريبت بنجاح! 🚀"})
 end)
 
 -- Clean up / ensure humanoid reference on respawn
