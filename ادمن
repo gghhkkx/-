@@ -1,6 +1,6 @@
 --[[
-    سكربت أدمن TX_01 - النسخة المربعة
-    المميزات: واجهة مربعة، عداد متصلين، حقوق، وكل خصائص الأدمن السابقة
+    سكربت أدمن TX_01 - الإصدار الكامل
+    المميزات: مراقبة (Spectate)، واجهة مربعة، عداد متصلين، حقوق
 ]]
 
 local Players = game:GetService("Players")
@@ -10,23 +10,23 @@ local Workspace = game:GetService("Workspace")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
--- إرسال إشعار الترحيب
+-- إرسال إشعار
 StarterGui:SetCore("SendNotification", {
-	Title = "تم التشغيل بنجاح";
-	Text = "تم تفعيل سكريبت TX_01 ✅";
+	Title = "تم التحديث";
+	Text = "تم إضافة نظام المراقبة ✅";
 	Duration = 5;
 })
 
 --------------------------------------------------------------------
--- 1. بناء واجهة المستخدم (GUI Creation)
+-- 1. بناء واجهة المستخدم
 --------------------------------------------------------------------
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "TX01_AdminGui"
+ScreenGui.Name = "TX01_AdminGui_v2"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
--- الزر العائم (يظهر عند التصغير)
+-- الزر العائم
 local OpenButton = Instance.new("TextButton")
 OpenButton.Name = "OpenButton"
 OpenButton.Size = UDim2.new(0, 80, 0, 40)
@@ -41,12 +41,12 @@ OpenButton.Visible = false
 OpenButton.Parent = ScreenGui
 OpenButton.ZIndex = 10
 
--- القائمة الرئيسية (مربعة الشكل)
+-- القائمة الرئيسية (مربعة)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 330, 0, 330) -- حجم مربع
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -165) -- توسيط
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 40, 180) -- أزرق
+MainFrame.Size = UDim2.new(0, 330, 0, 350) -- زدنا الطول قليلاً ليستوعب الزر الجديد
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -175)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 40, 180)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
@@ -54,11 +54,10 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
--- شريط العنوان (Title Bar)
+-- شريط العنوان
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Color3.fromRGB(15, 30, 150)
-TitleBar.BackgroundTransparency = 0
 TitleBar.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
@@ -76,7 +75,7 @@ TitleText.Font = Enum.Font.FredokaOne
 TitleText.TextSize = 18
 TitleText.Parent = TitleBar
 
--- زر القفل
+-- أزرار القفل والتصغير
 local LockBtn = Instance.new("TextButton")
 LockBtn.Size = UDim2.new(0, 30, 0, 30)
 LockBtn.Position = UDim2.new(1, -70, 0, 2)
@@ -85,7 +84,6 @@ LockBtn.Text = "🔓"
 LockBtn.Parent = TitleBar
 local LockCorner = Instance.new("UICorner") LockCorner.CornerRadius = UDim.new(0,5) LockCorner.Parent = LockBtn
 
--- زر التصغير
 local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0, 30, 0, 30)
 MinBtn.Position = UDim2.new(1, -35, 0, 2)
@@ -94,28 +92,20 @@ MinBtn.Text = "➖"
 MinBtn.Parent = TitleBar
 local MinCorner = Instance.new("UICorner") MinCorner.CornerRadius = UDim.new(0,5) MinCorner.Parent = MinBtn
 
---------------------------------------------------------------------
--- قسم عداد المتصلين (الجديد)
---------------------------------------------------------------------
+-- عداد المتصلين
 local StatusFrame = Instance.new("Frame")
 StatusFrame.Size = UDim2.new(1, 0, 0, 25)
-StatusFrame.Position = UDim2.new(0, 0, 0, 40) -- تحت العنوان
+StatusFrame.Position = UDim2.new(0, 0, 0, 40)
 StatusFrame.BackgroundTransparency = 1
 StatusFrame.Parent = MainFrame
 
--- الدائرة الخضراء
 local GreenDot = Instance.new("Frame")
 GreenDot.Size = UDim2.new(0, 12, 0, 12)
 GreenDot.Position = UDim2.new(0.05, 0, 0.5, -6)
-GreenDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاقع
-GreenDot.BorderSizePixel = 0
+GreenDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 GreenDot.Parent = StatusFrame
+local DotCorner = Instance.new("UICorner") DotCorner.CornerRadius = UDim.new(1, 0) DotCorner.Parent = GreenDot
 
-local DotCorner = Instance.new("UICorner")
-DotCorner.CornerRadius = UDim.new(1, 0) -- دائرة كاملة
-DotCorner.Parent = GreenDot
-
--- نص عدد المتصلين
 local OnlineLabel = Instance.new("TextLabel")
 OnlineLabel.Size = UDim2.new(0.8, 0, 1, 0)
 OnlineLabel.Position = UDim2.new(0.12, 0, 0, 0)
@@ -127,24 +117,19 @@ OnlineLabel.Font = Enum.Font.SourceSansBold
 OnlineLabel.TextSize = 16
 OnlineLabel.Parent = StatusFrame
 
--- تحديث العداد تلقائياً
 local function UpdatePlayerCount()
 	OnlineLabel.Text = #Players:GetPlayers() .. " متصل"
 end
 Players.PlayerAdded:Connect(UpdatePlayerCount)
 Players.PlayerRemoving:Connect(UpdatePlayerCount)
-UpdatePlayerCount() -- تشغيل عند البداية
-
---------------------------------------------------------------------
--- صندوق الكتابة والقائمة
---------------------------------------------------------------------
+UpdatePlayerCount()
 
 -- صندوق الكتابة
 local InputBox = Instance.new("TextBox")
 InputBox.Size = UDim2.new(0.9, 0, 0, 35)
-InputBox.Position = UDim2.new(0.05, 0, 0.22, 0) -- تم النزول قليلاً
+InputBox.Position = UDim2.new(0.05, 0, 0.22, 0)
 InputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-InputBox.PlaceholderText = "اكتب الرقم أو اسم اللاعب..."
+InputBox.PlaceholderText = "اسم اللاعب أو القيمة..."
 InputBox.Text = ""
 InputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
 InputBox.Parent = MainFrame
@@ -152,7 +137,7 @@ local InputCorner = Instance.new("UICorner") InputCorner.CornerRadius = UDim.new
 
 -- حاوية الأزرار
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(0.9, 0, 0.55, 0) -- تصغير الحجم لإفساح المجال للحقوق
+ScrollContainer.Size = UDim2.new(0.9, 0, 0.53, 0)
 ScrollContainer.Position = UDim2.new(0.05, 0, 0.35, 0)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.ScrollBarThickness = 4
@@ -160,28 +145,26 @@ ScrollContainer.Parent = MainFrame
 
 local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Parent = ScrollContainer
-UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.Padding = UDim.new(0, 6)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- حقوق المطور (Footer)
+-- الحقوق
 local CreditLabel = Instance.new("TextLabel")
 CreditLabel.Size = UDim2.new(1, 0, 0, 20)
-CreditLabel.Position = UDim2.new(0, 0, 0.92, 0) -- في أسفل القائمة
+CreditLabel.Position = UDim2.new(0, 0, 0.92, 0)
 CreditLabel.BackgroundTransparency = 1
 CreditLabel.Text = "تم صنع بواسطه TX_01"
-CreditLabel.TextColor3 = Color3.fromRGB(150, 150, 255) -- لون أزرق فاتح
+CreditLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
 CreditLabel.Font = Enum.Font.Code
 CreditLabel.TextSize = 14
 CreditLabel.Parent = MainFrame
 
 --------------------------------------------------------------------
--- 2. منطق التحريك والقفل
+-- 2. التحريك والقفل
 --------------------------------------------------------------------
 
 local dragging = false
-local dragInput
-local dragStart
-local startPos
+local dragInput, dragStart, startPos
 local isLocked = false
 
 local function update(input)
@@ -195,55 +178,32 @@ TitleBar.InputBegan:Connect(function(input)
 		dragging = true
 		dragStart = input.Position
 		startPos = MainFrame.Position
-		
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
+		input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
 	end
 end)
 
 TitleBar.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		update(input)
-	end
-end)
+UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then update(input) end end)
 
 LockBtn.MouseButton1Click:Connect(function()
 	isLocked = not isLocked
-	if isLocked then
-		LockBtn.Text = "🔒"
-		LockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-	else
-		LockBtn.Text = "🔓"
-		LockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-	end
+	if isLocked then LockBtn.Text = "🔒"; LockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	else LockBtn.Text = "🔓"; LockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0) end
 end)
 
-MinBtn.MouseButton1Click:Connect(function()
-	MainFrame.Visible = false
-	OpenButton.Visible = true
-end)
-
-OpenButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = true
-	OpenButton.Visible = false
-end)
+MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; OpenButton.Visible = true end)
+OpenButton.MouseButton1Click:Connect(function() MainFrame.Visible = true; OpenButton.Visible = false end)
 
 --------------------------------------------------------------------
--- 3. الوظائف والأزرار
+-- 3. الوظائف (Features)
 --------------------------------------------------------------------
 
 local function createButton(text, order)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1, 0, 0, 35) -- تصغير ارتفاع الزر قليلاً ليتناسب مع المربع
+	btn.Size = UDim2.new(1, 0, 0, 35)
 	btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0)
 	btn.TextColor3 = Color3.fromRGB(0, 0, 0)
 	btn.Text = text
@@ -251,22 +211,13 @@ local function createButton(text, order)
 	btn.TextSize = 18
 	btn.LayoutOrder = order
 	btn.Parent = ScrollContainer
-	
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
-	corner.Parent = btn
-	
+	local corner = Instance.new("UICorner") corner.CornerRadius = UDim.new(0, 8) corner.Parent = btn
 	return btn
 end
 
 local function toggleVisuals(btn, status)
-	if status then
-		btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-		btn.Text = btn.Text:gsub("OFF", "ON"):gsub("تفعيل", "مفعل")
-	else
-		btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0)
-		btn.Text = btn.Text:gsub("ON", "OFF"):gsub("مفعل", "تفعيل")
-	end
+	if status then btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); btn.Text = btn.Text:gsub("OFF", "ON")
+	else btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0); btn.Text = btn.Text:gsub("ON", "OFF") end
 end
 
 -- 1. انتقال
@@ -289,9 +240,7 @@ SpeedBtn.MouseButton1Click:Connect(function()
 	local speed = tonumber(InputBox.Text)
 	if speed and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 		LocalPlayer.Character.Humanoid.WalkSpeed = speed
-		toggleVisuals(SpeedBtn, true)
-		wait(0.5)
-		toggleVisuals(SpeedBtn, false)
+		toggleVisuals(SpeedBtn, true); wait(0.5); toggleVisuals(SpeedBtn, false)
 	end
 end)
 
@@ -302,91 +251,95 @@ JumpBtn.MouseButton1Click:Connect(function()
 	if jump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 		LocalPlayer.Character.Humanoid.UseJumpPower = true
 		LocalPlayer.Character.Humanoid.JumpPower = jump
-		toggleVisuals(JumpBtn, true)
-		wait(0.5)
-		toggleVisuals(JumpBtn, false)
+		toggleVisuals(JumpBtn, true); wait(0.5); toggleVisuals(JumpBtn, false)
 	end
 end)
 
 -- 4. طيران
 local FlyBtn = createButton("الطيران: OFF", 4)
-local flying = false
-local bodyVelocity = nil
-local bodyGyro = nil
-
+local flying, bv, bg = false, nil, nil
 FlyBtn.MouseButton1Click:Connect(function()
 	flying = not flying
 	if flying then
-		FlyBtn.Text = "الطيران: ON"
-		toggleVisuals(FlyBtn, true)
-		
+		FlyBtn.Text = "الطيران: ON"; toggleVisuals(FlyBtn, true)
 		local char = LocalPlayer.Character
 		if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-		local root = char.HumanoidRootPart
-		
-		bodyVelocity = Instance.new("BodyVelocity", root)
-		bodyVelocity.Velocity = Vector3.new(0,0,0)
-		bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-		
-		bodyGyro = Instance.new("BodyGyro", root)
-		bodyGyro.P = 9e4
-		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-		bodyGyro.CFrame = root.CFrame
-		
+		bv = Instance.new("BodyVelocity", char.HumanoidRootPart)
+		bv.Velocity, bv.MaxForce = Vector3.new(0,0,0), Vector3.new(math.huge, math.huge, math.huge)
+		bg = Instance.new("BodyGyro", char.HumanoidRootPart)
+		bg.P, bg.MaxTorque, bg.CFrame = 9e4, Vector3.new(9e9, 9e9, 9e9), char.HumanoidRootPart.CFrame
 		task.spawn(function()
 			while flying and char:FindFirstChild("Humanoid") do
-				if not bodyVelocity or not bodyVelocity.Parent then break end
-				local cam = Workspace.CurrentCamera
-				local moveDir = LocalPlayer.Character.Humanoid.MoveDirection
-				bodyVelocity.Velocity = moveDir * 50 + Vector3.new(0, (UserInputService:IsKeyDown(Enum.KeyCode.Space) and 50 or 0) + (UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and -50 or 0), 0)
-				bodyGyro.CFrame = cam.CFrame
+				if not bv or not bv.Parent then break end
+				local cam, moveDir = Workspace.CurrentCamera, char.Humanoid.MoveDirection
+				bv.Velocity = moveDir * 50 + Vector3.new(0, (UserInputService:IsKeyDown(Enum.KeyCode.Space) and 50 or 0) + (UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and -50 or 0), 0)
+				bg.CFrame = cam.CFrame
 				RunService.RenderStepped:Wait()
 			end
 		end)
 	else
-		FlyBtn.Text = "الطيران: OFF"
-		toggleVisuals(FlyBtn, false)
-		if bodyVelocity then bodyVelocity:Destroy() end
-		if bodyGyro then bodyGyro:Destroy() end
+		FlyBtn.Text = "الطيران: OFF"; toggleVisuals(FlyBtn, false)
+		if bv then bv:Destroy() end; if bg then bg:Destroy() end
 	end
 end)
 
 -- 5. Noclip
-local NoclipBtn = createButton("Noclip (اختراق): OFF", 5)
-local noclipEnabled = false
+local NoclipBtn = createButton("Noclip: OFF", 5)
+local noclip = false
 NoclipBtn.MouseButton1Click:Connect(function()
-	noclipEnabled = not noclipEnabled
-	if noclipEnabled then
-		NoclipBtn.Text = "Noclip (اختراق): ON"
-		toggleVisuals(NoclipBtn, true)
-	else
-		NoclipBtn.Text = "Noclip (اختراق): OFF"
-		toggleVisuals(NoclipBtn, false)
-	end
+	noclip = not noclip
+	if noclip then NoclipBtn.Text = "Noclip: ON"; toggleVisuals(NoclipBtn, true)
+	else NoclipBtn.Text = "Noclip: OFF"; toggleVisuals(NoclipBtn, false) end
 end)
 RunService.Stepped:Connect(function()
-	if noclipEnabled and LocalPlayer.Character then
+	if noclip and LocalPlayer.Character then
 		for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-			if part:IsA("BasePart") and part.CanCollide == true then part.CanCollide = false end
+			if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
 		end
 	end
 end)
 
 -- 6. قفز لا نهائي
 local InfJumpBtn = createButton("قفز لا نهائي: OFF", 6)
-local infJumpEnabled = false
+local infJump = false
 InfJumpBtn.MouseButton1Click:Connect(function()
-	infJumpEnabled = not infJumpEnabled
-	if infJumpEnabled then
-		InfJumpBtn.Text = "قفز لا نهائي: ON"
-		toggleVisuals(InfJumpBtn, true)
-	else
-		InfJumpBtn.Text = "قفز لا نهائي: OFF"
-		toggleVisuals(InfJumpBtn, false)
-	end
+	infJump = not infJump
+	if infJump then InfJumpBtn.Text = "قفز لا نهائي: ON"; toggleVisuals(InfJumpBtn, true)
+	else InfJumpBtn.Text = "قفز لا نهائي: OFF"; toggleVisuals(InfJumpBtn, false) end
 end)
 UserInputService.JumpRequest:Connect(function()
-	if infJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+	if infJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 		LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+-- 7. مراقبة اللاعبين (Spectate) - ميزة جديدة
+local SpectateBtn = createButton("مراقبة اللاعب: OFF", 7)
+local isSpectating = false
+SpectateBtn.MouseButton1Click:Connect(function()
+	local cam = Workspace.CurrentCamera
+	if not isSpectating then
+		local targetName = InputBox.Text
+		local found = false
+		for _, player in pairs(Players:GetPlayers()) do
+			if string.sub(string.lower(player.Name), 1, string.len(targetName)) == string.lower(targetName) or 
+			   string.sub(string.lower(player.DisplayName), 1, string.len(targetName)) == string.lower(targetName) then
+				if player.Character and player.Character:FindFirstChild("Humanoid") then
+					cam.CameraSubject = player.Character.Humanoid
+					isSpectating = true; found = true
+					SpectateBtn.Text = "مراقبة: " .. player.Name
+					toggleVisuals(SpectateBtn, true)
+					break
+				end
+			end
+		end
+		if not found then SpectateBtn.Text = "اللاعب غير موجود!"; wait(1); SpectateBtn.Text = "مراقبة اللاعب: OFF" end
+	else
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+			cam.CameraSubject = LocalPlayer.Character.Humanoid
+		end
+		isSpectating = false
+		SpectateBtn.Text = "مراقبة اللاعب: OFF"
+		toggleVisuals(SpectateBtn, false)
 	end
 end)
