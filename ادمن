@@ -1,420 +1,392 @@
--- TinyAdmin Full v1.0 (مع JumpPower، Fly، وشريط سحب، وتعديل جلب الموارد)
--- صنع بواسطة:abdarhman5641🇪🇬
--- ملاحظة: ضع هذا LocalScript في StarterPlayer -> StarterPlayerScripts
+--[[
+    سكربت أدمن TX_01 - النسخة المربعة
+    المميزات: واجهة مربعة، عداد متصلين، حقوق، وكل خصائص الأدمن السابقة
+]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "TinyAdminFull"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local Workspace = game:GetService("Workspace")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = Players.LocalPlayer
 
--- Helper
-local function safeWait(t) local s = 0; while s < (t or 0.01) do s = s + wait() end end
+-- إرسال إشعار الترحيب
+StarterGui:SetCore("SendNotification", {
+	Title = "تم التشغيل بنجاح";
+	Text = "تم تفعيل سكريبت TX_01 ✅";
+	Duration = 5;
+})
 
--- Main frame dimensions
-local MAX_HEIGHT = 500 
-local MIN_HEIGHT = 40  
-local DEFAULT_HEIGHT = 320 
+--------------------------------------------------------------------
+-- 1. بناء واجهة المستخدم (GUI Creation)
+--------------------------------------------------------------------
 
--- Main frame setup (لم يتغير)
-local frame = Instance.new("Frame")
-frame.Name = "MainFrame"
-frame.Size = UDim2.new(0, 300, 0, DEFAULT_HEIGHT) 
-frame.Position = UDim2.new(0.5, -150, 0.22, 0)
-frame.AnchorPoint = Vector2.new(0.5,0)
-frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Parent = gui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "TX01_AdminGui"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
--- Top bar setup (لم يتغير)
-local top = Instance.new("Frame", frame)
-top.Name = "Top"
-top.Size = UDim2.new(1, 0, 0, 36)
-top.Position = UDim2.new(0,0,0,0)
-top.BackgroundColor3 = Color3.fromRGB(40,40,40)
-Instance.new("UICorner", top).CornerRadius = UDim.new(0,10)
+-- الزر العائم (يظهر عند التصغير)
+local OpenButton = Instance.new("TextButton")
+OpenButton.Name = "OpenButton"
+OpenButton.Size = UDim2.new(0, 80, 0, 40)
+OpenButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+OpenButton.BackgroundColor3 = Color3.fromRGB(0, 0, 200)
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.Text = "ادمن"
+OpenButton.TextSize = 20
+OpenButton.Font = Enum.Font.FredokaOne
+OpenButton.BorderSizePixel = 2
+OpenButton.Visible = false
+OpenButton.Parent = ScreenGui
+OpenButton.ZIndex = 10
 
-local title = Instance.new("TextLabel", top)
-title.Text = "ادمن"
-title.Font = Enum.Font.ArialBold
-title.TextSize = 20
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.BackgroundTransparency = 1
-title.Position = UDim2.new(0, 10, 0, 2)
-title.Size = UDim2.new(0.6,0,1,0)
-title.TextXAlignment = Enum.TextXAlignment.Left
+-- القائمة الرئيسية (مربعة الشكل)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 330, 0, 330) -- حجم مربع
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -165) -- توسيط
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 40, 180) -- أزرق
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
-local subtitle = Instance.new("TextLabel", top)
-subtitle.Text = "مصري%100✅🇪🇬"
-subtitle.Font = Enum.Font.Arial
-subtitle.TextSize = 12
-subtitle.TextColor3 = Color3.fromRGB(200,200,200)
-subtitle.BackgroundTransparency = 1
-subtitle.Position = UDim2.new(0, 10, 0, 18)
-subtitle.Size = UDim2.new(0.45,0,1,0)
-subtitle.TextXAlignment = Enum.TextXAlignment.Left
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
 
--- توقيع المطور 
-local devLabel = Instance.new("TextLabel", top)
-devLabel.Text = "صنع بواسطة abdarhman5641"
-devLabel.Font = Enum.Font.Arial
-devLabel.TextSize = 10
-devLabel.TextColor3 = Color3.fromRGB(170,170,170)
-devLabel.BackgroundTransparency = 1
-devLabel.Position = UDim2.new(0, 10 + subtitle.TextBounds.X, 0, 18) 
-devLabel.Size = UDim2.new(0.45,0,1,0)
-devLabel.TextXAlignment = Enum.TextXAlignment.Left
-spawn(function()
-    safeWait(0.03)
-    if devLabel.AbsolutePosition.X + devLabel.AbsoluteSize.X > top.AbsolutePosition.X + top.AbsoluteSize.X - 8 then
-        devLabel.Position = UDim2.new(0, 10, 0, 30)
-        devLabel.Size = UDim2.new(1, -20, 0, 12)
-        devLabel.TextXAlignment = Enum.TextXAlignment.Left
-    end
-end)
+-- شريط العنوان (Title Bar)
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(15, 30, 150)
+TitleBar.BackgroundTransparency = 0
+TitleBar.Parent = MainFrame
 
-local lockBtn = Instance.new("TextButton", top)
-lockBtn.Text = "❌"
-lockBtn.Font = Enum.Font.ArialBold
-lockBtn.TextSize = 20
-lockBtn.Size = UDim2.new(0,36,0,28)
-lockBtn.Position = UDim2.new(1, -40, 0, 4)
-lockBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-Instance.new("UICorner", lockBtn).CornerRadius = UDim.new(0,8)
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.Parent = TitleBar
 
-local minBtn = Instance.new("TextButton", top)
-minBtn.Text = "➖"
-minBtn.Font = Enum.Font.ArialBold
-minBtn.TextSize = 20
-minBtn.Size = UDim2.new(0,36,0,28)
-minBtn.Position = UDim2.new(1, -80, 0, 4)
-minBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
-Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0,8)
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(0.5, 0, 1, 0)
+TitleText.Position = UDim2.new(0.05, 0, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "قائمة التحكم"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Font = Enum.Font.FredokaOne
+TitleText.TextSize = 18
+TitleText.Parent = TitleBar
 
--- Scrolling frame for content 
-local content = Instance.new("ScrollingFrame", frame)
-content.Name = "Content"
-content.Size = UDim2.new(1, -16, 1, -84) 
-content.Position = UDim2.new(0,8,0,44)
-content.BackgroundTransparency = 1
-content.Active = true 
-content.ScrollBarThickness = 8 
-content.ScrollBarImageColor3 = Color3.fromRGB(60, 60, 60) 
-content.CanvasSize = UDim2.new(0, 0, 0, 200) 
-content.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right 
+-- زر القفل
+local LockBtn = Instance.new("TextButton")
+LockBtn.Size = UDim2.new(0, 30, 0, 30)
+LockBtn.Position = UDim2.new(1, -70, 0, 2)
+LockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+LockBtn.Text = "🔓"
+LockBtn.Parent = TitleBar
+local LockCorner = Instance.new("UICorner") LockCorner.CornerRadius = UDim.new(0,5) LockCorner.Parent = LockBtn
 
--- Grid layout inside the scrolling frame (لم يتغير)
-local grid = Instance.new("UIGridLayout", content)
-grid.Name = "ButtonGrid"
-grid.CellSize = UDim2.new(0, 88, 0, 36)
-grid.CellPadding = UDim2.new(0, 6, 0, 8)
-grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
-grid.VerticalAlignment = Enum.VerticalAlignment.Top
-grid.SortOrder = Enum.SortOrder.LayoutOrder
-grid.StartCorner = Enum.StartCorner.TopLeft
+-- زر التصغير
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -35, 0, 2)
+MinBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+MinBtn.Text = "➖"
+MinBtn.Parent = TitleBar
+local MinCorner = Instance.new("UICorner") MinCorner.CornerRadius = UDim.new(0,5) MinCorner.Parent = MinBtn
 
--- Function to update CanvasSize automatically
-local function updateCanvasSize()
-    safeWait(0.1)
-    local contentHeight = grid.AbsoluteContentSize.Y
-    content.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
+--------------------------------------------------------------------
+-- قسم عداد المتصلين (الجديد)
+--------------------------------------------------------------------
+local StatusFrame = Instance.new("Frame")
+StatusFrame.Size = UDim2.new(1, 0, 0, 25)
+StatusFrame.Position = UDim2.new(0, 0, 0, 40) -- تحت العنوان
+StatusFrame.BackgroundTransparency = 1
+StatusFrame.Parent = MainFrame
+
+-- الدائرة الخضراء
+local GreenDot = Instance.new("Frame")
+GreenDot.Size = UDim2.new(0, 12, 0, 12)
+GreenDot.Position = UDim2.new(0.05, 0, 0.5, -6)
+GreenDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- أخضر فاقع
+GreenDot.BorderSizePixel = 0
+GreenDot.Parent = StatusFrame
+
+local DotCorner = Instance.new("UICorner")
+DotCorner.CornerRadius = UDim.new(1, 0) -- دائرة كاملة
+DotCorner.Parent = GreenDot
+
+-- نص عدد المتصلين
+local OnlineLabel = Instance.new("TextLabel")
+OnlineLabel.Size = UDim2.new(0.8, 0, 1, 0)
+OnlineLabel.Position = UDim2.new(0.12, 0, 0, 0)
+OnlineLabel.BackgroundTransparency = 1
+OnlineLabel.Text = "0 متصل"
+OnlineLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+OnlineLabel.TextXAlignment = Enum.TextXAlignment.Left
+OnlineLabel.Font = Enum.Font.SourceSansBold
+OnlineLabel.TextSize = 16
+OnlineLabel.Parent = StatusFrame
+
+-- تحديث العداد تلقائياً
+local function UpdatePlayerCount()
+	OnlineLabel.Text = #Players:GetPlayers() .. " متصل"
 end
+Players.PlayerAdded:Connect(UpdatePlayerCount)
+Players.PlayerRemoving:Connect(UpdatePlayerCount)
+UpdatePlayerCount() -- تشغيل عند البداية
 
--- left column buttons (grid)
-local function makeButton(txt, order)
-	local b = Instance.new("TextButton", content) 
-	b.LayoutOrder = order 
-	b.Text = txt
-	b.Font = Enum.Font.ArialBold
-	b.TextSize = 15
-	b.Size = UDim2.new(0, 88, 0, 36)
-	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
-	b.TextColor3 = Color3.fromRGB(255,255,255)
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
-	return b
-end
+--------------------------------------------------------------------
+-- صندوق الكتابة والقائمة
+--------------------------------------------------------------------
 
--- Buttons 
-local order = 1
-local btnFly = makeButton("Fly", order); order = order + 1 
-local btnNoclip = makeButton("Noclip", order); order = order + 1
-local btnSpeed = makeButton("Set Speed", order); order = order + 1
+-- صندوق الكتابة
+local InputBox = Instance.new("TextBox")
+InputBox.Size = UDim2.new(0.9, 0, 0, 35)
+InputBox.Position = UDim2.new(0.05, 0, 0.22, 0) -- تم النزول قليلاً
+InputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+InputBox.PlaceholderText = "اكتب الرقم أو اسم اللاعب..."
+InputBox.Text = ""
+InputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+InputBox.Parent = MainFrame
+local InputCorner = Instance.new("UICorner") InputCorner.CornerRadius = UDim.new(0,8) InputCorner.Parent = InputBox
 
-local btnJump = makeButton("JumpPower", order); order = order + 1 
-local btnTeleport = makeButton("Teleport →", order); order = order + 1
-local btnGiveWood = makeButton("GiveWood", order); order = order + 1 -- تم تعديله
+-- حاوية الأزرار
+local ScrollContainer = Instance.new("ScrollingFrame")
+ScrollContainer.Size = UDim2.new(0.9, 0, 0.55, 0) -- تصغير الحجم لإفساح المجال للحقوق
+ScrollContainer.Position = UDim2.new(0.05, 0, 0.35, 0)
+ScrollContainer.BackgroundTransparency = 1
+ScrollContainer.ScrollBarThickness = 4
+ScrollContainer.Parent = MainFrame
 
-local btnInvisible = makeButton("Invisible", order); order = order + 1
-local btnReset = makeButton("Reset", order); order = order + 1
-local btnFreecam = makeButton("FreeCam", order); order = order + 1
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ScrollContainer
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-local btnGiveFood = makeButton("GiveFood", order); order = order + 1 -- تم تعديله
-local btnBoom = makeButton("Boom", order); order = order + 1
-local btnHeal = makeButton("Heal", order); order = order + 1
+-- حقوق المطور (Footer)
+local CreditLabel = Instance.new("TextLabel")
+CreditLabel.Size = UDim2.new(1, 0, 0, 20)
+CreditLabel.Position = UDim2.new(0, 0, 0.92, 0) -- في أسفل القائمة
+CreditLabel.BackgroundTransparency = 1
+CreditLabel.Text = "تم صنع بواسطه TX_01"
+CreditLabel.TextColor3 = Color3.fromRGB(150, 150, 255) -- لون أزرق فاتح
+CreditLabel.Font = Enum.Font.Code
+CreditLabel.TextSize = 14
+CreditLabel.Parent = MainFrame
 
-local btnTest1 = makeButton("Test 1", order); order = order + 1
-local btnTest2 = makeButton("Test 2", order); order = order + 1
-local btnTest3 = makeButton("Test 3", order); order = order + 1
+--------------------------------------------------------------------
+-- 2. منطق التحريك والقفل
+--------------------------------------------------------------------
 
-updateCanvasSize()
-grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize) 
-
--- Input boxes and labels
-local inputBox = Instance.new("TextBox", frame)
-inputBox.Size = UDim2.new(1, -16, 0, 28)
-inputBox.Position = UDim2.new(0, 8, 1, -40) 
-inputBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
-inputBox.PlaceholderText = "اكتب قيم (مثال: 60 أو اسم لاعب) ثم اضغط الزر المناسب"
-inputBox.TextColor3 = Color3.new(1,1,1)
-inputBox.Font = Enum.Font.Arial
-inputBox.TextSize = 14
-Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0,8)
-
---------------------------------------------------------------------------------
--- مقبض سحب لتغيير الحجم (لم يتغير)
---------------------------------------------------------------------------------
-local resizeHandle = Instance.new("Frame", frame)
-resizeHandle.Name = "ResizeHandle"
-resizeHandle.Size = UDim2.new(1, 0, 0, 12) 
-resizeHandle.Position = UDim2.new(0, 0, 1, -12)
-resizeHandle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-resizeHandle.Active = true
-resizeHandle.ZIndex = 2 
-
-local handleIcon = Instance.new("TextLabel", resizeHandle)
-handleIcon.Text = "⬆️ لفوق للتصغير | لتحت للتكبير ⬇️" 
-handleIcon.BackgroundTransparency = 1
-handleIcon.TextColor3 = Color3.fromRGB(150, 150, 150)
-handleIcon.Font = Enum.Font.Arial
-handleIcon.TextSize = 10
-handleIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-handleIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-handleIcon.Size = UDim2.new(1,0,1,0)
-
--- منطق تغيير حجم الإطار بالسحب (لم يتغير)
-local isResizing = false
-local resizeStartPos
-
-local function resizeInputBegan(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isResizing = true
-        resizeStartPos = input.Position
-        dragging = false
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                isResizing = false
-            end
-        end)
-    end
-end
-
-local function resizeInputChanged(input)
-    if isResizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local deltaY = input.Position.Y - resizeStartPos.Y
-        local currentHeight = frame.AbsoluteSize.Y
-        local newHeight = currentHeight + deltaY 
-        newHeight = math.clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT)
-        
-        local tweenInfo = TweenInfo.new(0.05, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
-        local goal = {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, newHeight)}
-        TweenService:Create(frame, tweenInfo, goal):Play()
-
-        resizeStartPos = input.Position
-    end
-end
-
-resizeHandle.InputBegan:Connect(resizeInputBegan)
-UserInputService.InputChanged:Connect(resizeInputChanged)
---------------------------------------------------------------------------------
-
--- Drag/Minimize Logic (لم يتغير)
-local miniIcon = Instance.new("TextButton")
--- ... (بقية منطق السحب والتصغير/التكبير)
-
--- Drag logic for frame (touch+mouse)
 local dragging = false
-local dragStartPos, frameStartPos
-
-local function onInputBegan(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if not isResizing then
-            dragging = true
-            dragStartPos = input.Position
-            frameStartPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-	end
-end
-
-local function onInputChanged(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		local delta = input.Position - dragStartPos
-		frame.Position = UDim2.new(frameStartPos.X.Scale, frameStartPos.X.Offset + delta.X, frameStartPos.Y.Scale, frameStartPos.Y.Offset + delta.Y)
-	end
-end
-
-top.InputBegan:Connect(onInputBegan)
-UserInputService.InputChanged:Connect(onInputChanged)
-
--- lock / minimize behavior
+local dragInput
+local dragStart
+local startPos
 local isLocked = false
-local isMin = false
 
-lockBtn.MouseButton1Click:Connect(function()
+local function update(input)
+	if isLocked then return end
+	local delta = input.Position - dragStart
+	MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+TitleBar.InputBegan:Connect(function(input)
+	if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not isLocked then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+		
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+LockBtn.MouseButton1Click:Connect(function()
 	isLocked = not isLocked
-	frame.Visible = not isLocked
-	miniIcon.Visible = isLocked
+	if isLocked then
+		LockBtn.Text = "🔒"
+		LockBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	else
+		LockBtn.Text = "🔓"
+		LockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+	end
 end)
 
-miniIcon.MouseButton1Click:Connect(function()
-	isLocked = false
-	frame.Visible = true
-	miniIcon.Visible = false
+MinBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = false
+	OpenButton.Visible = true
 end)
 
-minBtn.MouseButton1Click:Connect(function()
-	isMin = not isMin
-    local targetHeight = isMin and MIN_HEIGHT or DEFAULT_HEIGHT
-    
-    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0)
-    local goal = {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, targetHeight)}
-    
-    TweenService:Create(frame, tweenInfo, goal):Play()
-    
-	content.Visible = not isMin
-	inputBox.Visible = not isMin
-    resizeHandle.Visible = not isMin 
-
-	minBtn.Text = isMin and "➕" or "➖"
+OpenButton.MouseButton1Click:Connect(function()
+	MainFrame.Visible = true
+	OpenButton.Visible = false
 end)
 
+--------------------------------------------------------------------
+-- 3. الوظائف والأزرار
+--------------------------------------------------------------------
 
--- get character helper (لم يتغير)
-local function getChar()
-	return player.Character or player.CharacterAdded:Wait()
+local function createButton(text, order)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, 0, 0, 35) -- تصغير ارتفاع الزر قليلاً ليتناسب مع المربع
+	btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0)
+	btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+	btn.Text = text
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextSize = 18
+	btn.LayoutOrder = order
+	btn.Parent = ScrollContainer
+	
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = btn
+	
+	return btn
 end
 
-local function getHumanoid()
-	local ch = getChar()
-	return ch:FindFirstChildOfClass("Humanoid")
+local function toggleVisuals(btn, status)
+	if status then
+		btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+		btn.Text = btn.Text:gsub("OFF", "ON"):gsub("تفعيل", "مفعل")
+	else
+		btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0)
+		btn.Text = btn.Text:gsub("ON", "OFF"):gsub("مفعل", "تفعيل")
+	end
 end
 
-local function getRoot()
-	local ch = getChar()
-	return ch:FindFirstChild("HumanoidRootPart") or ch:FindFirstChild("Torso") or ch:FindFirstChild("LowerTorso")
-end
-
--- ***************************************************************
--- منطق جلب الموارد (المُعدّل)
--- ***************************************************************
-
-local function getMouseTargetPosition()
-    local mouse = player:GetMouse()
-    if mouse and mouse.Target and mouse.Hit then
-        -- نستخدم mouse.Hit.p للحصول على موضع النقر في العالم
-        return mouse.Hit.p + Vector3.new(0, 1.5, 0) -- إضافة ارتفاع بسيط ليكون فوق الأرض
-    end
-    -- في حالة عدم النقر على شيء، نجعله يظهر أمام اللاعب
-    local root = getRoot()
-    if root then
-        return root.CFrame.p + root.CFrame.LookVector * 5 + Vector3.new(0, 1.5, 0)
-    end
-    return nil
-end
-
--- الدالة المُعدّلة لإنشاء العنصر في موقع الماوس (وليس مربوطاً باللاعب)
-local function spawnItemAtMouse(name)
-    local pos = getMouseTargetPosition()
-    if not pos then return end
-    
-    local part = Instance.new("Part")
-    part.Size = Vector3.new(2, 2, 2)
-    part.Shape = Enum.PartType.Block
-    part.Anchored = false
-    part.CanCollide = true -- يمكن أن يصطدم به اللاعب لجمعه
-    part.Material = Enum.Material.Wood -- الافتراضي: خشب
-    part.Name = name -- سيكون إما "Wood" أو "Food"
-    
-    if name == "Wood" then
-        part.Color = Color3.fromRGB(150, 75, 0) -- لون بني
-    elseif name == "Food" then
-        part.Color = Color3.fromRGB(255, 150, 50) -- لون برتقالي/لحمي
-    end
-    
-    part.CFrame = CFrame.new(pos)
-    part.Parent = workspace
-    
-    -- وضع علامة (tag) على القطعة لتحديد أنها مادة يمكن جمعها (اختياري)
-    local tag = Instance.new("StringValue", part)
-    tag.Name = "ResourceTag"
-    tag.Value = name
-    
-    game.Debris:AddItem(part, 60) -- يتم إزالتها بعد 60 ثانية
-
-    return true
-end
-
--- ***************************************************************
--- آلية جلب الموارد في "99 Nights in the Forest" (تعديل الأزرار)
--- ***************************************************************
-
-btnGiveWood.MouseButton1Click:Connect(function()
-    local success = spawnItemAtMouse("Wood")
-    if success then
-        game.StarterGui:SetCore("SendNotification", {Title="GiveWood", Text="تم إسقاط الخشب في موقع الماوس (قد يتطلب تفاعل اللعبة لجمعه)"})
-    else
-        game.StarterGui:SetCore("SendNotification", {Title="GiveWood", Text="لم يتم تحديد موقع مناسب لإسقاط الخشب"})
-    end
+-- 1. انتقال
+local TpBtn = createButton("انتقال للاعب (اكتب الاسم)", 1)
+TpBtn.MouseButton1Click:Connect(function()
+	local targetName = InputBox.Text
+	for _, player in pairs(Players:GetPlayers()) do
+		if string.sub(string.lower(player.Name), 1, string.len(targetName)) == string.lower(targetName) or 
+		   string.sub(string.lower(player.DisplayName), 1, string.len(targetName)) == string.lower(targetName) then
+			if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+			end
+		end
+	end
 end)
 
-btnGiveFood.MouseButton1Click:Connect(function()
-    -- يمكن وضع الطعام بنفس الطريقة، أو الافتراض أن اللاعب يريد وضعه في مخزون الموارد مباشرة:
-    
-    -- لـ "99 Nights" (آلية محتملة):
-    local resourceFolder = player:FindFirstChild("PlayerResources") -- اسم محتمل للمجلد
-    if resourceFolder then
-        local foodValue = resourceFolder:FindFirstChild("Food") or resourceFolder:FindFirstChild("Carrot") -- قد يكون اسمه "Food" أو "Carrot"
-        local amount = tonumber(inputBox.Text) or 10
-        if foodValue and foodValue:IsA("NumberValue") then
-             foodValue.Value = foodValue.Value + amount
-             game.StarterGui:SetCore("SendNotification", {Title="GiveFood", Text="تم إضافة "..amount.." طعام مباشرة (آلية تخمين)"})
-             inputBox.Text = ""
-             return
-        end
-    end
-    
-    -- آلية بديلة: إسقاط العنصر في العالم ليتم جمعه (مثل الخشب)
-    local success = spawnItemAtMouse("Food")
-    if success then
-        game.StarterGui:SetCore("SendNotification", {Title="GiveFood", Text="تم إسقاط الطعام في موقع الماوس (قد يتطلب تفاعل اللعبة لجمعه)"})
-    else
-        game.StarterGui:SetCore("SendNotification", {Title="GiveFood", Text="لم يتم تحديد موقع مناسب لإسقاط الطعام"})
-    end
+-- 2. سرعة
+local SpeedBtn = createButton("تغيير السرعة (اكتب الرقم)", 2)
+SpeedBtn.MouseButton1Click:Connect(function()
+	local speed = tonumber(InputBox.Text)
+	if speed and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid.WalkSpeed = speed
+		toggleVisuals(SpeedBtn, true)
+		wait(0.5)
+		toggleVisuals(SpeedBtn, false)
+	end
 end)
 
--- (بقية الأوامر كما هي لم تتغير)
--- ...
--- (1) Speed ...
--- (2) JumpPower ...
--- (3) Teleport ...
--- (4) Noclip ...
--- (5) Fly ...
--- (7) Invisible ...
--- (8) Reset ...
--- (9) FreeCam ...
--- (10) Boom ...
--- (11) Heal ...
+-- 3. قفز
+local JumpBtn = createButton("قوة القفز (اكتب الرقم)", 3)
+JumpBtn.MouseButton1Click:Connect(function()
+	local jump = tonumber(InputBox.Text)
+	if jump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid.UseJumpPower = true
+		LocalPlayer.Character.Humanoid.JumpPower = jump
+		toggleVisuals(JumpBtn, true)
+		wait(0.5)
+		toggleVisuals(JumpBtn, false)
+	end
+end)
 
--- Final note for user
-print("TinyAdminFull loaded - العبد 🇪🇬")
-game.StarterGui:SetCore("SendNotification", {Title="TinyAdmin", Text="تم تحميل السكربت — صنع بواسطة abdarhman5641"})
+-- 4. طيران
+local FlyBtn = createButton("الطيران: OFF", 4)
+local flying = false
+local bodyVelocity = nil
+local bodyGyro = nil
+
+FlyBtn.MouseButton1Click:Connect(function()
+	flying = not flying
+	if flying then
+		FlyBtn.Text = "الطيران: ON"
+		toggleVisuals(FlyBtn, true)
+		
+		local char = LocalPlayer.Character
+		if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+		local root = char.HumanoidRootPart
+		
+		bodyVelocity = Instance.new("BodyVelocity", root)
+		bodyVelocity.Velocity = Vector3.new(0,0,0)
+		bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+		
+		bodyGyro = Instance.new("BodyGyro", root)
+		bodyGyro.P = 9e4
+		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bodyGyro.CFrame = root.CFrame
+		
+		task.spawn(function()
+			while flying and char:FindFirstChild("Humanoid") do
+				if not bodyVelocity or not bodyVelocity.Parent then break end
+				local cam = Workspace.CurrentCamera
+				local moveDir = LocalPlayer.Character.Humanoid.MoveDirection
+				bodyVelocity.Velocity = moveDir * 50 + Vector3.new(0, (UserInputService:IsKeyDown(Enum.KeyCode.Space) and 50 or 0) + (UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and -50 or 0), 0)
+				bodyGyro.CFrame = cam.CFrame
+				RunService.RenderStepped:Wait()
+			end
+		end)
+	else
+		FlyBtn.Text = "الطيران: OFF"
+		toggleVisuals(FlyBtn, false)
+		if bodyVelocity then bodyVelocity:Destroy() end
+		if bodyGyro then bodyGyro:Destroy() end
+	end
+end)
+
+-- 5. Noclip
+local NoclipBtn = createButton("Noclip (اختراق): OFF", 5)
+local noclipEnabled = false
+NoclipBtn.MouseButton1Click:Connect(function()
+	noclipEnabled = not noclipEnabled
+	if noclipEnabled then
+		NoclipBtn.Text = "Noclip (اختراق): ON"
+		toggleVisuals(NoclipBtn, true)
+	else
+		NoclipBtn.Text = "Noclip (اختراق): OFF"
+		toggleVisuals(NoclipBtn, false)
+	end
+end)
+RunService.Stepped:Connect(function()
+	if noclipEnabled and LocalPlayer.Character then
+		for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+			if part:IsA("BasePart") and part.CanCollide == true then part.CanCollide = false end
+		end
+	end
+end)
+
+-- 6. قفز لا نهائي
+local InfJumpBtn = createButton("قفز لا نهائي: OFF", 6)
+local infJumpEnabled = false
+InfJumpBtn.MouseButton1Click:Connect(function()
+	infJumpEnabled = not infJumpEnabled
+	if infJumpEnabled then
+		InfJumpBtn.Text = "قفز لا نهائي: ON"
+		toggleVisuals(InfJumpBtn, true)
+	else
+		InfJumpBtn.Text = "قفز لا نهائي: OFF"
+		toggleVisuals(InfJumpBtn, false)
+	end
+end)
+UserInputService.JumpRequest:Connect(function()
+	if infJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
