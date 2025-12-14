@@ -1,6 +1,6 @@
 --[[
-    سكربت أدمن TX_01 - الإصدار النهائي (مع عدم الموت)
-    الميزات: عدم الموت (God Mode)، كشف الأماكن (ESP)، مراقبة، طيران، قفز، سرعة، الخ.
+    سكربت أدمن TX_01 - الإصدار النهائي (تم حذف خاصية التثبيت وتصحيح أزرار الإدخال)
+    الميزات: راديو، عدم الموت (درع الحماية)، كشف الأماكن، مراقبة، طيران، قفز، سرعة، الخ.
 ]]
 
 local Players = game:GetService("Players")
@@ -10,10 +10,42 @@ local Workspace = game:GetService("Workspace")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
+-- إدارة الصوت العام (يسمعه المستخدم المحلي فقط)
+local currentSound = nil
+
+-- قائمة الأكواد المقترحة
+local MusicCodes = {
+    {"Lofi Chill - ambient", "183563914"},
+    {"Epic Battle Music", "5764359409"},
+    {"Meme Song - Upbeat", "7709328225"},
+    {"Club Dance Groove", "6296884617"},
+    {"Classical Piano", "461099120"},
+    {"Trap Beat - Hard", "6514736637"},
+}
+
+local function PlaySound(assetId)
+    if currentSound and currentSound.IsPlaying then
+        currentSound:Stop()
+        currentSound:Destroy()
+    end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://" .. assetId
+    sound.Volume = 0.5 
+    sound.Looped = true
+    sound.Parent = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or Workspace
+    currentSound = sound
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        sound:Play()
+    end
+end
+
+
 -- إرسال إشعار
 StarterGui:SetCore("SendNotification", {
-	Title = "تم التحديث";
-	Text = "تم إضافة خاصية عدم الموت!🛡️";
+	Title = "تم التصحيح";
+	Text = "تم إزالة خاصية التثبيت وتصحيح استقرار أزرار السرعة والقفز. 🚀";
 	Duration = 5;
 })
 
@@ -22,7 +54,7 @@ StarterGui:SetCore("SendNotification", {
 --------------------------------------------------------------------
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "TX01_AdminGui_v4"
+ScreenGui.Name = "TX01_AdminGui_v7_Fixed"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
@@ -33,7 +65,7 @@ OpenButton.Size = UDim2.new(0, 80, 0, 40)
 OpenButton.Position = UDim2.new(0.05, 0, 0.1, 0)
 OpenButton.BackgroundColor3 = Color3.fromRGB(0, 0, 200)
 OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.Text = "🇪🇬✅100%ادمن"
+OpenButton.Text = "ادمن"
 OpenButton.TextSize = 20
 OpenButton.Font = Enum.Font.FredokaOne
 OpenButton.BorderSizePixel = 2
@@ -44,8 +76,8 @@ OpenButton.ZIndex = 10
 -- القائمة الرئيسية (مربعة)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 330, 0, 420) -- تم زيادة الطول
-MainFrame.Position = UDim2.new(0.5, -165, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 330, 0, 460)
+MainFrame.Position = UDim2.new(0.5, -165, 0.5, -230)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 40, 180)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
@@ -123,7 +155,7 @@ local InputBox = Instance.new("TextBox")
 InputBox.Size = UDim2.new(0.9, 0, 0, 35)
 InputBox.Position = UDim2.new(0.05, 0, 0.22, 0)
 InputBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-InputBox.PlaceholderText = "اسم اللاعب أو القيمة..."
+InputBox.PlaceholderText = "كود الأغنية أو اسم اللاعب / القيمة..."
 InputBox.Text = ""
 InputBox.TextColor3 = Color3.fromRGB(0, 0, 0)
 InputBox.Parent = MainFrame
@@ -131,7 +163,7 @@ local InputCorner = Instance.new("UICorner") InputCorner.CornerRadius = UDim.new
 
 -- حاوية الأزرار
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(0.9, 0, 0.68, 0) -- تعديل الحجم
+ScrollContainer.Size = UDim2.new(0.9, 0, 0.72, 0)
 ScrollContainer.Position = UDim2.new(0.05, 0, 0.35, 0)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.ScrollBarThickness = 4
@@ -145,7 +177,7 @@ UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 -- الحقوق
 local CreditLabel = Instance.new("TextLabel")
 CreditLabel.Size = UDim2.new(1, 0, 0, 20)
-CreditLabel.Position = UDim2.new(0, 0, 0.95, 0)
+CreditLabel.Position = UDim2.new(0, 0, 0.96, 0)
 CreditLabel.BackgroundTransparency = 1
 CreditLabel.Text = "تم صنع بواسطه TX_01"
 CreditLabel.TextColor3 = Color3.fromRGB(150, 150, 255)
@@ -205,8 +237,8 @@ local function createButton(text, order)
 end
 
 local function toggleVisuals(btn, status)
-	if status then btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); btn.Text = btn.Text:gsub("OFF", "ON")
-	else btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0); btn.Text = btn.Text:gsub("ON", "OFF") end
+	if status then btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50); btn.Text = btn.Text:gsub("OFF", "ON"):gsub("إيقاف", "تشغيل")
+	else btn.BackgroundColor3 = Color3.fromRGB(255, 220, 0); btn.Text = btn.Text:gsub("ON", "OFF"):gsub("تشغيل", "إيقاف") end
 end
 
 --------------------------------------------------------------------
@@ -228,24 +260,49 @@ TpBtn.MouseButton1Click:Connect(function()
 end)
 
 -- 2. سرعة (Speed)
-local SpeedBtn = createButton("تغيير السرعة (اكتب الرقم)", 2)
+local speedActive = false
+local defaultSpeed = 16
+local SpeedBtn = createButton("تغيير السرعة: OFF", 2)
 SpeedBtn.MouseButton1Click:Connect(function()
-	local speed = tonumber(InputBox.Text)
-	if speed and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-		LocalPlayer.Character.Humanoid.WalkSpeed = speed
-		toggleVisuals(SpeedBtn, true); wait(0.5); toggleVisuals(SpeedBtn, false)
-	end
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    if not speedActive then
+        local inputSpeed = tonumber(InputBox.Text)
+        local newSpeed = inputSpeed or 50 -- إذا لم يدخل قيمة، استخدم 50 كافتراضي
+        
+        humanoid.WalkSpeed = newSpeed
+        speedActive = true
+        toggleVisuals(SpeedBtn, true)
+    else
+        humanoid.WalkSpeed = defaultSpeed
+        speedActive = false
+        toggleVisuals(SpeedBtn, false)
+    end
 end)
 
 -- 3. قفز (Jump)
-local JumpBtn = createButton("قوة القفز (اكتب الرقم)", 3)
+local jumpActive = false
+local defaultJump = 50
+local JumpBtn = createButton("قوة القفز: OFF", 3)
 JumpBtn.MouseButton1Click:Connect(function()
-	local jump = tonumber(InputBox.Text)
-	if jump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-		LocalPlayer.Character.Humanoid.UseJumpPower = true
-		LocalPlayer.Character.Humanoid.JumpPower = jump
-		toggleVisuals(JumpBtn, true); wait(0.5); toggleVisuals(JumpBtn, false)
-	end
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    if not jumpActive then
+        local inputJump = tonumber(InputBox.Text)
+        local newJump = inputJump or 100 -- إذا لم يدخل قيمة، استخدم 100 كافتراضي
+
+        humanoid.UseJumpPower = true
+        humanoid.JumpPower = newJump
+        jumpActive = true
+        toggleVisuals(JumpBtn, true)
+    else
+        humanoid.UseJumpPower = true
+        humanoid.JumpPower = defaultJump
+        jumpActive = false
+        toggleVisuals(JumpBtn, false)
+    end
 end)
 
 -- 4. طيران (Fly)
@@ -337,11 +394,10 @@ SpectateBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
-
 -- 8. كشف الأماكن (ESP/Wallhack)
 local ESPBtn = createButton("كشف الأماكن (ESP): OFF", 8)
 local espEnabled = false
-local connections = {}
+local espConnections = {}
 
 local function SetupESP(player)
 	if player == LocalPlayer or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -383,7 +439,7 @@ local function DestroyESP(player)
 	end
 end
 
-local function OnCharacterAdded(character)
+local function OnCharacterAddedESP(character)
 	if not espEnabled then return end
 	local player = Players:GetPlayerFromCharacter(character)
 	if player then task.wait(0.1); SetupESP(player) end
@@ -395,61 +451,153 @@ ESPBtn.MouseButton1Click:Connect(function()
 	if espEnabled then
 		toggleVisuals(ESPBtn, true)
 		for _, player in pairs(Players:GetPlayers()) do
-			OnCharacterAdded(player.Character)
-			if player.Character then connections[player] = player.CharacterAdded:Connect(OnCharacterAdded) end
+			OnCharacterAddedESP(player.Character)
+			if player.Character then espConnections[player] = player.CharacterAdded:Connect(OnCharacterAddedESP) end
 		end
-		connections.PlayerAdded = Players.PlayerAdded:Connect(function(newPlayer)
-			newPlayer.CharacterAdded:Connect(OnCharacterAdded)
-			OnCharacterAdded(newPlayer.Character)
+		espConnections.PlayerAdded = Players.PlayerAdded:Connect(function(newPlayer)
+			newPlayer.CharacterAdded:Connect(OnCharacterAddedESP)
+			OnCharacterAddedESP(newPlayer.Character)
 		end)
 	else
 		toggleVisuals(ESPBtn, false)
 		for _, player in pairs(Players:GetPlayers()) do
 			DestroyESP(player)
-			if connections[player] then connections[player]:Disconnect(); connections[player] = nil end
+			if espConnections[player] then espConnections[player]:Disconnect(); espConnections[player] = nil end
 		end
-		if connections.PlayerAdded then connections.PlayerAdded:Disconnect(); connections.PlayerAdded = nil end
+		if espConnections.PlayerAdded then espConnections.PlayerAdded:Disconnect(); espConnections.PlayerAdded = nil end
 	end
 end)
 
--- 9. عدم الموت (God Mode) -- الميزة الجديدة
-local GodModeBtn = createButton("عدم الموت: OFF", 9)
+-- 9. عدم الموت (God Mode) - باستخدام ForceField
 local godModeEnabled = false
-local healthConnection = nil
+local characterAddedConnection = nil
 
+local function EnableForceField()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    if not char:FindFirstChild("ForceField") then
+        local ff = Instance.new("ForceField")
+        ff.Parent = char
+    end
+end
+
+local function DisableForceField()
+    local char = LocalPlayer.Character
+    if char then
+        local ff = char:FindFirstChild("ForceField")
+        if ff then ff:Destroy() end
+    end
+end
+
+local GodModeBtn = createButton("عدم الموت (الدرع): OFF", 9)
 GodModeBtn.MouseButton1Click:Connect(function()
 	godModeEnabled = not godModeEnabled
 	
 	if godModeEnabled then
 		toggleVisuals(GodModeBtn, true)
-		
-		-- ضبط الصحة القصوى
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("Humanoid") then
-			char.Humanoid.MaxHealth = 999999999
-		end
-		
-		-- استعادة الصحة باستمرار
-		healthConnection = RunService.Heartbeat:Connect(function()
-			local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
-			if humanoid and humanoid.Health < humanoid.MaxHealth then
-				humanoid.Health = humanoid.MaxHealth
-			end
-		end)
-		
+		EnableForceField()
+        characterAddedConnection = LocalPlayer.CharacterAdded:Connect(EnableForceField)
 	else
-		-- إيقاف
 		toggleVisuals(GodModeBtn, false)
-		
-		if healthConnection then
-			healthConnection:Disconnect()
-			healthConnection = nil
-		end
-		
-		-- إعادة ضبط الصحة القصوى
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("Humanoid") then
-			char.Humanoid.MaxHealth = 100
-		end
+        DisableForceField()
+		if characterAddedConnection then 
+            characterAddedConnection:Disconnect() 
+            characterAddedConnection = nil
+        end
 	end
 end)
+
+-- 10. الراديو (Music/Radio)
+local RadioBtn = createButton("الراديو: إيقاف", 10)
+
+local MusicListFrame = Instance.new("Frame")
+MusicListFrame.Name = "MusicListFrame"
+MusicListFrame.Size = UDim2.new(0, 250, 0, 300)
+MusicListFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+MusicListFrame.BackgroundColor3 = Color3.fromRGB(40, 60, 200)
+MusicListFrame.Visible = false
+MusicListFrame.BorderSizePixel = 0
+MusicListFrame.ZIndex = 5
+MusicListFrame.Parent = MainFrame
+
+local ListCorner = Instance.new("UICorner") ListCorner.CornerRadius = UDim.new(0, 8) ListCorner.Parent = MusicListFrame
+local ListScroll = Instance.new("ScrollingFrame")
+ListScroll.Size = UDim2.new(1, 0, 1, 0)
+ListScroll.BackgroundTransparency = 1
+ListScroll.Parent = MusicListFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = ListScroll
+ListLayout.Padding = UDim.new(0, 5)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- تعبئة قائمة الأكواد
+for i, data in ipairs(MusicCodes) do
+    local name = data[1]
+    local id = data[2]
+    local musicButton = Instance.new("TextButton")
+    musicButton.Size = UDim2.new(1, -10, 0, 30)
+    musicButton.Position = UDim2.new(0.02, 0, 0, 0)
+    musicButton.Text = name .. " (" .. id .. ")"
+    musicButton.BackgroundColor3 = Color3.fromRGB(255, 240, 100)
+    musicButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+    musicButton.Font = Enum.Font.SourceSans
+    musicButton.TextSize = 14
+    musicButton.LayoutOrder = i
+    musicButton.Parent = ListScroll
+    
+    musicButton.MouseButton1Click:Connect(function()
+        InputBox.Text = id
+        MusicListFrame.Visible = false
+        PlaySound(id)
+        RadioBtn.Text = "الراديو: تشغيل"
+        toggleVisuals(RadioBtn, true)
+    end)
+    local btnCorner = Instance.new("UICorner") btnCorner.CornerRadius = UDim.new(0, 5) btnCorner.Parent = musicButton
+end
+
+
+RadioBtn.MouseButton1Click:Connect(function()
+    local inputId = InputBox.Text
+    
+    if inputId ~= "" and tonumber(inputId) then
+        if currentSound and currentSound.IsPlaying then
+            currentSound:Stop()
+            currentSound:Destroy()
+            currentSound = nil
+            RadioBtn.Text = "الراديو: إيقاف"
+            toggleVisuals(RadioBtn, false)
+        else
+            PlaySound(inputId)
+            RadioBtn.Text = "الراديو: تشغيل"
+            toggleVisuals(RadioBtn, true)
+        end
+    else
+        MusicListFrame.Visible = not MusicListFrame.Visible
+    end
+end)
+
+-- التأكد من أن الصوت يتبع اللاعب والدرع يعود عند إعادة التشخيص
+LocalPlayer.CharacterAdded:Connect(function(char)
+    -- للراديو
+    if currentSound and currentSound.SoundId ~= "" then
+        currentSound.Parent = char:WaitForChild("HumanoidRootPart")
+        if not currentSound.IsPlaying then
+            currentSound:Play()
+        end
+    end
+    -- لعدم الموت
+    if godModeEnabled then
+        EnableForceField() 
+    end
+    -- لتصحيح السرعة والقفز عند الريسبون إذا كانت مفعلة
+    local humanoid = char:WaitForChild("Humanoid")
+    if speedActive then
+        local inputSpeed = tonumber(InputBox.Text)
+        humanoid.WalkSpeed = inputSpeed or 50
+    end
+    if jumpActive then
+        local inputJump = tonumber(InputBox.Text)
+        humanoid.JumpPower = inputJump or 100
+    end
+end)
+
